@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | Beacon</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        /* =========================================================
+           BEACON REGISTER PAGE VISUALS (Perfectly Centered)
+           ========================================================= */
+
+        :root {
+            --primary: #1e1e48;     
+            --primary-hover: #2c2c68;
+            --secondary: #0b5cff;
+            --bg-color: #ffffff;
+            --wave-color: #e6edf4;  
+            --text-main: #172033;
+            --text-muted: #64748b;
+            --success: #16a34a;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            align-items: center;      /* Centers content vertically */
+            justify-content: center;  /* Centers content horizontally */
+            overflow: hidden;         /* Completely removes scrollbars */
+            position: relative;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* =========================================================
+           BACKGROUND WAVE
+           ========================================================= */
+        .bg-wave {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .bg-wave svg {
+            width: 100%;
+            height: auto;
+            max-height: 85vh;
+        }
+
+        /* =========================================================
+           HEADER (Navbar Style) - Floating at the top
+           ========================================================= */
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            width: 100%;
+            position: absolute; 
+            top: 0;
+            left: 0;
+            z-index: 20;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .brand-mark {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+        }
+
+        .brand-name {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.8);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(228, 234, 242, 0.8);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+        }
+
+        /* =========================================================
+           AUTH PAGE & CARD (Dead Center)
+           ========================================================= */
+        .auth-page {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+            padding-top: 40px; /* Slight offset so header doesn't touch it on tiny screens */
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 440px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(228, 234, 242, 0.9);
+            border-radius: 24px;
+            padding: 35px 40px; /* Slightly condensed to fit all fields perfectly */
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+            text-align: center;
+        }
+
+        .auth-label {
+            color: var(--secondary);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .auth-card h1 {
+            color: var(--primary);
+            font-size: 32px;
+            font-weight: 800;
+            margin: 0 0 8px;
+        }
+
+        .auth-card h1 span {
+            color: var(--secondary);
+        }
+
+        .auth-description {
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        /* =========================================================
+           FORM ELEMENTS (Condensed for perfect fit)
+           ========================================================= */
+        .form-group {
+            margin-bottom: 15px; 
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--text-main);
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+        }
+
+        .form-group input::placeholder {
+            color: #94a3b8;
+        }
+
+        .form-group input:focus {
+            background: #ffffff;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 4px rgba(11, 92, 255, 0.1);
+        }
+
+        .password-hint {
+            color: var(--text-muted);
+            font-size: 11px;
+            margin-top: 6px;
+        }
+
+        .register-button {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 30px; /* Pill shape to match */
+            background: var(--primary);
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(30, 30, 72, 0.2);
+        }
+
+        .register-button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30, 30, 72, 0.3);
+        }
+
+        .register-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* =========================================================
+           MESSAGES & LINKS
+           ========================================================= */
+        .message {
+            display: none;
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            line-height: 1.5;
+            word-break: break-word;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .message.error {
+            display: block;
+            background: #fef2f2;
+            color: var(--danger);
+            border: 1px solid #fecaca;
+        }
+
+        .message.success {
+            display: block;
+            background: #f0fdf4;
+            color: var(--success);
+            border-color: #bbf7d0;
+        }
+
+        .auth-links {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-muted);
+            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .auth-links a {
+            color: var(--secondary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .auth-links a:hover {
+            color: var(--primary);
+        }
+
+        .security-note {
+            text-align: center;
+            margin-top: 20px;
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                overflow-y: auto; /* Re-enable vertical scroll on tiny phones just in case */
+            }
+            .auth-card {
+                padding: 30px 20px;
+            }
+            .auth-card h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-wave">
+        <svg viewBox="0 0 1440 600" preserveAspectRatio="none">
+            <path fill="var(--wave-color)" d="M0,0 L1440,0 L1440,300 C1100,450 900,100 400,350 C200,450 0,300 0,300 Z"></path>
+        </svg>
+    </div>
+
+    <header class="site-header">
+        <a href="index.html" class="brand">
+            <div class="brand-mark">
+                <img src="logo.png" alt="Beacon Logo" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+            <div>
+                <div class="brand-name">Beacon</div>
+            </div>
+        </a>
+
+        <div class="system-status">
+            <span class="status-dot"></span>
+            System Online
+        </div>
+    </header>
+
+
+    <main class="auth-page">
+        <section class="auth-card">
+
+            <div class="auth-label">
+                CREATE ACCOUNT
+            </div>
+
+            <h1>
+                Join <span>Beacon.</span>
+            </h1>
+
+            <p class="auth-description">
+                Create your customer account to access telecom coverage and service requests.
+            </p>
+
+            <form id="registerForm">
+
+                <div class="form-group">
+                    <label for="name">
+                        Full Name
+                    </label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        placeholder="Enter your full name"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="email">
+                        Email Address
+                    </label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="Enter your email"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="password">
+                        Password
+                    </label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Create a password"
+                        minlength="8"
+                        required
+                    >
+                    <div class="password-hint">
+                        Password must contain at least 8 characters.
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="confirmPassword">
+                        Confirm Password
+                    </label>
+                    <input
+                        type="password"
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        placeholder="Confirm your password"
+                        minlength="8"
+                        required
+                    >
+                </div>
+
+                <button
+                    type="submit"
+                    class="register-button"
+                    id="registerButton"
+                >
+                    Create Account
+                </button>
+
+            </form>
+
+            <div id="message" class="message"></div>
+
+            <div class="auth-links">
+                <div>
+                    Already have an account?
+                    <a href="login.html">Sign in</a>
+                </div>
+
+                <a href="index.html">← Back to Home</a>
+            </div>
+
+            <div class="security-note">
+                🔒 Secure JWT authenticated access
+            </div>
+
+        </section>
+    </main>
+
+
+    <script>
+        const registerForm = document.getElementById("registerForm");
+        const registerButton = document.getElementById("registerButton");
+        const message = document.getElementById("message");
+
+        registerForm.addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const name = document.getElementById("name").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+
+            /* ==========================================
+               PASSWORD CHECK
+            ========================================== */
+            if (password !== confirmPassword) {
+                showMessage("Passwords do not match.", "error");
+                return;
+            }
+
+            if (password.length < 8) {
+                showMessage("Password must contain at least 8 characters.", "error");
+                return;
+            }
+
+            /* ==========================================
+               LOADING
+            ========================================== */
+            registerButton.disabled = true;
+            registerButton.textContent = "Creating Account...";
+
+            try {
+                /* ======================================
+                   API REQUEST
+                ====================================== */
+                const response = await fetch("/api/auth/register", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        email: email,
+                        password: password,
+                        role: "customer"
+                    })
+                });
+
+                const data = await response.json();
+
+                /* ======================================
+                   ERROR
+                ====================================== */
+                if (!response.ok) {
+                    throw new Error(data.detail || "Registration failed.");
+                }
+
+                /* ======================================
+                   SUCCESS
+                ====================================== */
+                showMessage("Account created successfully! Redirecting to login...", "success");
+
+                registerForm.reset();
+
+                setTimeout(function() {
+                    window.location.href = "login.html";
+                }, 1800);
+
+            } catch (error) {
+                showMessage(error.message, "error");
+            } finally {
+                registerButton.disabled = false;
+                registerButton.textContent = "Create Account";
+            }
+        });
+
+        /* =================================================
+           MESSAGE FUNCTION
+        ================================================= */
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = "message " + type;
+        }
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | Beacon</title>
+
+    <style>
+        /* =========================================================
+           BEACON ABOUT US PAGE
+           ========================================================= */
+
+        :root {
+            --primary: #1e1e48;
+            --primary-hover: #2c2c68;
+            --bg-color: #ffffff;
+            --wave-color: #e6edf4;
+            --text-main: #172033;
+            --text-muted: #64748b;
+            --card-bg: rgba(255, 255, 255, 0.85);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* BACKGROUND WAVE */
+        .bg-wave {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: -1;
+        }
+        
+        .bg-wave svg {
+            width: 100%;
+            height: auto;
+            max-height: 85vh;
+        }
+
+        /* NAVIGATION */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 22px;
+            color: var(--primary);
+        }
+
+        .mini-logo-svg {
+            width: 45px;
+            height: 45px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 35px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-main);
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .btn-get-started {
+            background: var(--primary);
+            color: white !important;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .btn-get-started:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        /* CONTENT SECTIONS */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto 80px;
+            padding: 0 5%;
+            position: relative;
+            z-index: 10;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 40px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 50px;
+            max-width: 700px;
+            margin-inline: auto;
+            line-height: 1.6;
+        }
+
+        /* GRID CARDS (Mission/Vision) */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .info-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(228, 234, 242, 1);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .info-card h3 {
+            font-size: 22px;
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-card p {
+            line-height: 1.7;
+            color: var(--text-main);
+        }
+
+        /* FEATURES GRID */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+        }
+
+        .feature-box {
+            text-align: center;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid var(--wave-color);
+        }
+
+        .feature-icon {
+            font-size: 35px;
+            margin-bottom: 15px;
+        }
+
+        .feature-box h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        /* HOW TO USE LIST */
+        .steps-list {
+            list-style: none;
+            counter-reset: steps;
+            max-width: 800px;
+            margin: 0 auto 60px;
+        }
+
+        .step-item {
+            position: relative;
+            padding-left: 60px;
+            margin-bottom: 30px;
+        }
+
+        .step-item::before {
+            counter-increment: steps;
+            content: counter(steps);
+            position: absolute;
+            left: 0;
+            top: -5px;
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .step-item h4 {
+            font-size: 18px;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .step-item p {
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* HISTORY SECTION */
+        .history-section {
+            background: var(--primary);
+            color: white;
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .history-section h3 {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .history-section p {
+            font-size: 16px;
+            line-height: 1.8;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .section-title {
+                font-size: 32px;
+            }
+            .history-section {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Wavy Background -->
+    <div class="bg-wave">
+        <svg viewBox="0 0 1440 600" preserveAspectRatio="none">
+            <path fill="var(--wave-color)" d="M0,0 L1440,0 L1440,300 C1100,450 900,100 400,350 C200,450 0,300 0,300 Z"></path>
+        </svg>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-logo">
+            <svg class="mini-logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="mini-blue-grad" cx="40%" cy="40%" r="60%">
+                        <stop offset="0%" stop-color="#bac2fb" />
+                        <stop offset="100%" stop-color="#ebf1f8" stop-opacity="0.5" />
+                    </radialGradient>
+                </defs>
+                <circle cx="100" cy="100" r="90" fill="url(#mini-blue-grad)" />
+                <path d="M100 120 L85 180 L115 180 Z" stroke="#1e1e48" stroke-width="3" fill="none"/>
+                <path d="M80 80 Q100 60 120 80" stroke="#00c2ff" stroke-width="3" fill="none" stroke-linecap="round"/>
+            </svg>
+            Beacon
+        </div>
+
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="about.html" style="color: var(--primary); font-weight: 700;">About Us</a>
+            <a href="login.html" class="btn-get-started">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- Content Container -->
+    <div class="container">
+        
+        <h1 class="section-title">About Beacon</h1>
+        <p class="section-subtitle">Revolutionizing telecom infrastructure management through AI, transparent tracking, and seamless customer experiences.</p>
+
+        <!-- Mission & Vision -->
+        <div class="grid-2">
+            <div class="info-card">
+                <h3>🎯 Our Mission</h3>
+                <p>To provide an integrated GIS-based platform that connects telecom infrastructure, customers, field operations, and administrative management through intelligent complaint handling, spatial visualization, and transparent service workflows.</p>
+            </div>
+            <div class="info-card">
+                <h3>👁️Our Vision</h3>
+                <p>To build a smarter, more connected, and service-oriented telecom ecosystem where geospatial intelligence, real-time infrastructure information, and intelligent customer support work together to make network services more transparent, accessible, and reliable.</p>
+            </div>
+        </div>
+
+        
+
+        <!-- How to Use -->
+        <h2 class="section-title" style="font-size: 32px;">How to Use Beacon</h2>
+        <ul class="steps-list">
+            <li class="step-item">
+                <h4>Sign In / Register</h4>
+                <p>Click on the "Get Started" button to access the Beacon Customer Portal securely.</p>
+            </li>
+            <li class="step-item">
+                <h4>Ask Aira for Service Details</h4>
+                <p>Use the chat interface to ask Aira about tower coverage in your specific area (e.g., "Check service in Hinjewadi").</p>
+            </li>
+            <li class="step-item">
+                <h4>Log a Complaint</h4>
+                <p>If you face network issues, type "Register a complaint" in the chat, or click the "New Complaint" button to submit your issue directly to the telecom operators.</p>
+            </li>
+            <li class="step-item">
+                <h4>Track Your Status</h4>
+                <p>Visit the "My Complaints" tab or ask Aira to track your unique Complaint ID (e.g., CMP-001) to see live updates on your issue.</p>
+            </li>
+        </ul>
+
+        <!-- History/Origin -->
+        <div class="history-section">
+            <h3>Our Journey</h3>
+            <p>
+                The concept for <strong>Beacon</strong> (formerly known as TOWERGIS) was conceptualized to solve the growing disconnect between consumers facing network outages and telecom providers lacking real-time localized feedback. Development began with the goal of integrating spatial data (GIS) with intuitive AI. 
+                <br><br>
+                Officially launched in <strong>August 2026</strong>, Beacon transformed into a user-first platform, introducing "Aira"—our flagship AI assistant—making it easier than ever for everyday users to interact with complex telecom infrastructure data.
+            </p>
+        </div>
+
+    </div>
+
+</body>
+</html>

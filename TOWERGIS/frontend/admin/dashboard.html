@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beacon | Admin</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- SUPABASE CLIENT CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+<!-- BACKGROUND ACCENT GLOW --> 
+<div class="bg-wave">
+    <svg viewBox="0 0 1440 600" preserveAspectRatio="none">
+        <path fill="rgba(59, 130, 246, 0.04)" d="M0,0 L1440,0 L1440,300 C1100,450 900,100 400,350 C200,450 0,300 0,300 Z"></path>
+    </svg>
+</div>
+
+<!-- =========================================================
+     SIDEBAR
+========================================================= -->
+<aside class="sidebar">
+
+    <div class="brand">
+        <!-- FIXED LOGO PATH POINTING TO ROOT DIRECTORY -->
+        <div class="brand-icon">
+            <img src="../logo.png" alt="Beacon Logo" style="width: 100%; height: 100%; object-fit: contain;">
+        </div>
+        <div>
+            <h2>Beacon</h2>
+            <span>Administration</span>
+        </div>
+    </div>
+
+    <nav class="navigation">
+        <button class="nav-item active" data-section="dashboard">
+            <span>▦</span> Dashboard
+        </button>
+        <button class="nav-item" data-section="users">
+            <span>👥</span> Users
+        </button>
+        <button class="nav-item" data-section="workers">
+            <span>👷</span> Workers
+        </button>
+        <button class="nav-item" data-section="towers">
+            <span>📡</span> Towers
+        </button>
+        <button class="nav-item" data-section="complaints">
+            <span>⚠</span> Complaints
+        </button>
+    </nav>
+
+    <div class="sidebar-bottom">
+        <div class="admin-mini">
+            <div class="avatar" id="adminAvatar">A</div>
+            <div>
+                <strong id="sidebarAdminName">Administrator</strong>
+                <small id="sidebarAdminEmail">admin@beacon.tc</small>
+            </div>
+        </div>
+
+        <button id="logoutBtn" class="logout-btn">↪ Logout</button>
+    </div>
+
+</aside>
+
+<!-- =========================================================
+     MAIN CONTENT
+========================================================= -->
+<main class="main-content">
+
+    <!-- TOP HEADER -->
+    <header class="topbar">
+        <div>
+            <h1 id="pageTitle">Admin Dashboard</h1>
+            <p id="pageSubtitle">Beacon system administration</p>
+        </div>
+
+        <div class="topbar-user">
+            <div class="avatar" id="topAdminAvatar">A</div>
+            <div>
+                <strong id="topAdminName">Administrator</strong>
+                <span>System Administrator</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- =====================================================
+         DASHBOARD SECTION
+    ====================================================== -->
+    <section id="dashboardSection" class="page-section">
+        <div class="welcome-card">
+            <div>
+                <span class="eyebrow">Beacon CONTROL CENTER</span>
+                <h2>Welcome, <span id="welcomeAdminName">Administrator</span></h2>
+                <p>Monitor telecom infrastructure, manage workers, review complaints and control the Beacon system.</p>
+            </div>
+            <div class="system-status">
+                <span class="status-dot"></span> System Online
+            </div>
+        </div>
+
+        <!-- STATISTICS -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div>
+                    <span>Total Users</span>
+                    <strong id="totalUsers">9</strong>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">👤</div>
+                <div>
+                    <span>Customers</span>
+                    <strong id="totalCustomers">5</strong>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">👷</div>
+                <div>
+                    <span>Workers</span>
+                    <strong id="totalWorkers">3</strong>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📡</div>
+                <div>
+                    <span>Total Towers</span>
+                    <strong id="totalTowers">10</strong>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🟢</div>
+                <div>
+                    <span>Active Towers</span>
+                    <strong id="activeTowers">9</strong>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">⚠</div>
+                <div>
+                    <span>Open Complaints</span>
+                    <strong id="openComplaints">0</strong>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🛠</div>
+                <div>
+                    <span>Pending Requests</span>
+                    <strong id="pendingRequests">0</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMIN NOTICE MANAGEMENT CARD -->
+        <div class="card" style="margin-top: 20px; background: var(--card, rgba(13, 27, 45, 0.90)); border: 1px solid var(--border); border-radius: 16px; padding: 24px; color: var(--text);">
+            <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 700; color: #fff;">Broadcast System Notice</h3>
+                    <p style="font-size: 12px; color: var(--muted);">Publish running alerts to worker terminals.</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+                    <input type="text" id="adminNoticeInput" placeholder="Type notice message (e.g., Emergency maintenance at Pune North...)" style="flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(148,163,184,0.3); background: #060b14; color: #fff; font-size: 13px; outline: none;">
+                    <button onclick="publishAdminNotice()" class="primary-btn" style="background: var(--danger); color: white; border: none;">Publish Notice</button>
+                </div>
+                
+                <div style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; margin-bottom: 8px;">Active Broadcasts</div>
+                <div id="adminNoticesList" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+                    <div style="color: var(--muted); font-size: 12px; text-align: center; padding: 10px;">Loading notices...</div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- =====================================================
+         USERS SECTION
+    ====================================================== -->
+    <section id="usersSection" class="page-section hidden">
+        <div class="section-header">
+            <div>
+                <h2>User Management</h2>
+                <p>View and manage registered customers.</p>
+            </div>
+            <button id="refreshUsersBtn" class="secondary-btn">↻ Refresh</button>
+        </div>
+
+        <div class="table-card">
+            <div class="table-header">
+                <div>
+                    <h3>Registered Customers</h3>
+                    <span id="userCount">0 customers</span>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Created</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr><td colspan="6" class="empty-state" style="text-align:center; padding:30px;">Loading users...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- =====================================================
+         WORKERS SECTION
+    ====================================================== -->
+    <section id="workersSection" class="page-section hidden">
+        <div class="section-header">
+            <div>
+                <h2>Worker Management</h2>
+                <p>Create and manage Beacon field workers.</p>
+            </div>
+            <button id="showWorkerFormBtn" class="primary-btn">+ Create Worker</button>
+        </div>
+
+        <!-- CREATE WORKER MODAL -->
+        <div id="workerFormCard" class="form-card hidden">
+            <div class="form-card-header">
+                <div>
+                    <h3>Create Worker Account</h3>
+                    <p>Worker accounts are created only by administrators.</p>
+                </div>
+                <button id="closeWorkerFormBtn" class="close-btn">×</button>
+            </div>
+
+            <form id="workerForm" style="padding-top: 15px;">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="workerName">Full Name</label>
+                        <input id="workerName" type="text" placeholder="Enter worker name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="workerEmail">Worker Email</label>
+                        <input id="workerEmail" type="email" placeholder="worker@beacon.tc" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="workerPassword">Temporary Password</label>
+                        <input id="workerPassword" type="password" placeholder="Enter temporary password" required>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="cancelWorkerBtn" class="secondary-btn">Cancel</button>
+                    <button type="submit" class="primary-btn">Create Worker</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- EDIT WORKER MODAL -->
+        <div id="editWorkerFormCard" class="form-card hidden">
+            <div class="form-card-header">
+                <div>
+                    <h3>Edit Worker Details</h3>
+                    <p>Update existing field worker information.</p>
+                </div>
+                <button id="closeEditWorkerBtn" class="close-btn">×</button>
+            </div>
+
+            <form id="editWorkerForm" style="padding-top: 15px;">
+                <input type="hidden" id="editWorkerId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="editWorkerName">Full Name</label>
+                        <input id="editWorkerName" type="text" placeholder="Enter worker name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editWorkerEmail">Worker Email</label>
+                        <input id="editWorkerEmail" type="email" placeholder="worker@beacon.tc" required>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="cancelEditWorkerBtn" class="secondary-btn">Cancel</button>
+                    <button type="submit" class="primary-btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-card">
+            <div class="table-header">
+                <div>
+                    <h3>Registered Workers</h3>
+                    <span id="workerCount">0 workers</span>
+                </div>
+                <button id="refreshWorkersBtn" class="secondary-btn">↻ Refresh</button>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Created</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="workersTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- =====================================================
+         TOWERS SECTION
+    ====================================================== -->
+    <section id="towersSection" class="page-section hidden">
+        <div class="section-header">
+            <div>
+                <h2>Tower Management</h2>
+                <p>Register telecom towers in the Beacon database.</p>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-card-header">
+                <div>
+                    <h3>Add New Tower</h3>
+                    <p>Enter the location and infrastructure information.</p>
+                </div>
+            </div>
+
+            <form id="towerForm" style="padding-top: 15px;">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="towerCode">Tower Code</label>
+                        <input id="towerCode" type="text" placeholder="TWR-PUN-011" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="towerName">Tower Name</label>
+                        <input id="towerName" type="text" placeholder="Pune Central Tower" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="towerOperator">Operator</label>
+                        <input id="towerOperator" type="text" placeholder="Jio / Airtel / Vi">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="towerTechnology">Technology</label>
+                        <select id="towerTechnology">
+                            <option value="5G + 4G VoLTE">5G + 4G VoLTE</option>
+                            <option value="4G LTE Only">4G LTE Only</option>
+                            <option value="3G / 4G Limited">3G / 4G Limited</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="towerLatitude">Latitude</label>
+                        <input id="towerLatitude" type="number" step="any" placeholder="18.5204" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="towerLongitude">Longitude</label>
+                        <input id="towerLongitude" type="number" step="any" placeholder="73.8567" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="towerRadius">Coverage Radius (km)</label>
+                        <input id="towerRadius" type="number" step="0.1" min="0.1" value="2" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="towerStatus">Status</label>
+                        <select id="towerStatus">
+                            <option value="active">Active</option>
+                            <option value="maintenance">Maintenance</option>
+                            <option value="offline">Offline</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="towerAddress">Address</label>
+                        <textarea id="towerAddress" rows="3" placeholder="Tower address / Locality"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="reset" class="secondary-btn">Clear</button>
+                    <button type="submit" class="primary-btn">Add Tower</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- =====================================================
+         COMPLAINTS SECTION
+    ====================================================== -->
+    <section id="complaintsSection" class="page-section hidden">
+        <div class="section-header">
+            <div>
+                <h2>Complaint Management</h2>
+                <p>Review and update customer complaints.</p>
+            </div>
+            <button id="refreshComplaintsBtn" class="secondary-btn">↻ Refresh</button>
+        </div>
+
+        <div class="table-card">
+            <div class="table-header">
+                <div>
+                    <h3>Customer Complaints</h3>
+                    <span id="complaintCount">0 complaints</span>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Subject</th>
+                            <th>Category / Area</th>
+                            <th>Status</th>
+                            <th>Assign Worker</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="complaintsTableBody">
+                        <tr><td colspan="7" class="empty-state">Loading complaints...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- TOAST -->
+<div id="toast" class="toast">
+    <span id="toastMessage">Message</span>
+</div>
+
+<script src="js/admin.js"></script>
+</body>
+</html>

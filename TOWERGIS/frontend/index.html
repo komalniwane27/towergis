@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beacon | Connect the World</title>
+
+    <style>
+        /* =========================================================
+           BEACON LANDING PAGE
+           ========================================================= */
+
+        :root {
+            --primary: #1e1e48;     /* Dark navy for brand text/buttons */
+            --primary-hover: #2c2c68;
+            --bg-color: #ffffff;
+            --wave-color: #e6edf4;  /* Soft blue-gray for the background wave */
+            --text-main: #172033;
+            --text-muted: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* =========================================================
+           BACKGROUND WAVE
+           ========================================================= */
+        .bg-wave {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: -1;
+        }
+        
+        .bg-wave svg {
+            width: 100%;
+            height: auto;
+            max-height: 85vh;
+        }
+
+        /* =========================================================
+           NAVIGATION
+           ========================================================= */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 22px;
+            color: var(--primary);
+        }
+
+        /* Mini Logo for Navbar */
+        .mini-logo-svg {
+            width: 45px;
+            height: 45px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 35px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-main);
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .btn-get-started {
+            background: var(--primary);
+            color: white !important;
+            padding: 10px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .btn-get-started:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-btn {
+            display: none;
+            font-size: 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--primary);
+        }
+
+        /* =========================================================
+           HERO SECTION
+           ========================================================= */
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1300px;
+            margin: 60px auto;
+            padding: 0 5%;
+            position: relative;
+            z-index: 10;
+        }
+
+        .hero-content {
+            flex: 1;
+            max-width: 550px;
+        }
+
+        .hero-content h1 {
+            font-size: 52px;
+            font-weight: 800;
+            line-height: 1.15;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .hero-content p {
+            font-size: 18px;
+            line-height: 1.6;
+            color: var(--text-main);
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+
+        /* App Store Buttons */
+        .download-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .app-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .app-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #000;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+
+        .app-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .app-btn svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .app-btn-text {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .app-btn-text span:first-child {
+            font-size: 10px;
+        }
+
+        .app-btn-text span:last-child {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* =========================================================
+           HERO GRAPHIC (BEACON LOGO)
+           ========================================================= */
+        .hero-graphic {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .main-logo-svg {
+            width: 100%;
+            max-width: 550px;
+            height: auto;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* =========================================================
+           RESPONSIVE DESIGN
+           ========================================================= */
+        @media (max-width: 992px) {
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                gap: 50px;
+                margin: 40px auto;
+            }
+            .hero-content {
+                max-width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            .hero-graphic {
+                justify-content: center;
+            }
+            .nav-links {
+                display: none; /* Hide links on mobile */
+            }
+            .mobile-menu-btn {
+                display: block;
+            }
+            .hero-content h1 {
+                font-size: 40px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .app-buttons {
+                flex-direction: column;
+                width: 100%;
+                max-width: 300px;
+            }
+            .app-btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Wavy Background -->
+    <div class="bg-wave">
+        <svg viewBox="0 0 1440 600" preserveAspectRatio="none">
+            <path fill="var(--wave-color)" d="M0,0 L1440,0 L1440,300 C1100,450 900,100 400,350 C200,450 0,300 0,300 Z"></path>
+        </svg>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-logo">
+            <!-- Mini SVG Logo for Navbar -->
+            <svg class="mini-logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="mini-blue-grad" cx="40%" cy="40%" r="60%">
+                        <stop offset="0%" stop-color="#bac2fb" />
+                        <stop offset="100%" stop-color="#ebf1f8" stop-opacity="0.5" />
+                    </radialGradient>
+                </defs>
+                <circle cx="100" cy="100" r="90" fill="url(#mini-blue-grad)" />
+                <ellipse cx="100" cy="100" rx="90" ry="90" stroke="#888" stroke-width="1.5" fill="none" />
+                <ellipse cx="100" cy="100" rx="45" ry="90" stroke="#888" stroke-width="1.5" fill="none" />
+                <ellipse cx="100" cy="100" rx="90" ry="45" stroke="#888" stroke-width="1.5" fill="none" />
+                <!-- Mini Tower -->
+                <path d="M100 120 L85 180 L115 180 Z" stroke="#1e1e48" stroke-width="3" fill="none"/>
+                <!-- Signal -->
+                <path d="M80 80 Q100 60 120 80" stroke="#00c2ff" stroke-width="3" fill="none" stroke-linecap="round"/>
+            </svg>
+            Beacon
+        </div>
+
+        <button class="mobile-menu-btn">☰</button>
+
+        <div class="nav-links">
+            <a href="#"></a>
+            <a href="#"></a>
+            <a href="#"></a>
+            <a href="#"></a>
+            <a href="about.html">About Us</a>
+            <!-- Links to your actual login page -->
+            <a href="login.html" class="btn-get-started">Login</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <main class="hero">
+        <!-- Left Content -->
+        <div class="hero-content">
+            <h1>Beacon:<br>Connect the World.</h1>
+            <p>Tech services landing page to-enhanced network and systems and em-data efficient operating systems.</p>
+            
+            <div class="download-title">Avaliable Soon</div>
+            <div class="app-buttons">
+                <a href="#" class="app-btn">
+                    <!-- Apple Logo SVG -->
+                    <svg viewBox="0 0 384 512">
+                        <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.1-44.6-35.9-2.8-74.3 22.7-93.1 22.7-18.9 0-48.6-21.4-75.6-21.2-46.7 .3-89.8 27.2-114 69.2-48.8 84.8-14.8 211.2 32.5 281.3 23.3 34.6 51 70.3 87 69.1 34.2-1.3 47.3-21.9 88.5-21.9 41.1 0 53 22 88.5 21.3 37.3-.6 61.2-33.8 84.1-70.5 29.3-46.9 41.4-92.4 42.1-94.8-1.1-.5-66.2-25.5-65.9-105.8zM245.9 83.1c20.3-24.7 34-59.2 30.2-93.1-28.7 1.2-64.4 19.3-85.4 43.8-17.5 20.3-33.5 55.4-28.9 88.7 32.3 2.5 63.8-14.7 84.1-39.4z"/>
+                    </svg>
+                    <div class="app-btn-text">
+                        <span>Download on the</span>
+                        <span>App Store</span>
+                    </div>
+                </a>
+
+                <a href="#" class="app-btn">
+                    <!-- Google Play Logo SVG -->
+                    <svg viewBox="0 0 512 512">
+                        <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/>
+                    </svg>
+                    <div class="app-btn-text">
+                        <span>GET IT ON</span>
+                        <span>Google Play</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Right Content: The Beacon Logo Graphic -->
+        <div class="hero-graphic">
+            <!-- Full SVG Recreation of the Beacon Logo -->
+            <svg class="main-logo-svg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="blue-grad" cx="35%" cy="35%" r="65%">
+                        <stop offset="0%" stop-color="#bac2fb" stop-opacity="0.9" />
+                        <stop offset="70%" stop-color="#ebf1f8" stop-opacity="0.4" />
+                        <stop offset="100%" stop-color="transparent" />
+                    </radialGradient>
+                    
+                    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+                        <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000" flood-opacity="0.2"/>
+                    </filter>
+                </defs>
+
+                <!-- Colored Backdrop -->
+                <circle cx="250" cy="250" r="190" fill="url(#blue-grad)" />
+
+                <!-- Wireframe Globe Lines -->
+                <g stroke="#94a3b8" stroke-width="1.5" fill="none" opacity="0.7">
+                    <!-- Outer Circle -->
+                    <circle cx="250" cy="250" r="210" />
+                    <!-- Vertical Ellipses -->
+                    <ellipse cx="250" cy="250" rx="90" ry="210" />
+                    <ellipse cx="250" cy="250" rx="160" ry="210" />
+                    <!-- Horizontal Ellipses -->
+                    <ellipse cx="250" cy="250" rx="210" ry="90" />
+                    <ellipse cx="250" cy="250" rx="210" ry="160" />
+                    <!-- Diagonals -->
+                    <ellipse cx="250" cy="250" rx="210" ry="210" transform="rotate(45 250 250)" />
+                    <ellipse cx="250" cy="250" rx="210" ry="210" transform="rotate(-45 250 250)" />
+                </g>
+
+                <!-- Signal Waves -->
+                <g stroke="#3b82f6" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.8">
+                    <path d="M 270 200 Q 320 180 370 200" />
+                    <path d="M 280 230 Q 315 215 350 230" />
+                </g>
+
+                <!-- Text "Beacon" -->
+                <text x="250" y="275" font-family="'Inter', sans-serif" font-size="82" font-weight="900" fill="#1e1e48" text-anchor="middle" letter-spacing="-2">Beacon</text>
+
+                <!-- Tower Structure -->
+                <g stroke="#1e1e48" stroke-width="4" fill="none" stroke-linejoin="round" transform="translate(0, 25)">
+                    <!-- Main Legs -->
+                    <path d="M 250 260 L 210 400 L 290 400 Z" />
+                    <!-- Horizontal braces -->
+                    <line x1="225" y1="340" x2="275" y2="340" />
+                    <line x1="237" y1="295" x2="263" y2="295" />
+                    <!-- Diagonal braces -->
+                    <line x1="225" y1="340" x2="263" y2="295" />
+                    <line x1="237" y1="295" x2="275" y2="340" />
+                    
+                    <line x1="210" y1="400" x2="275" y2="340" />
+                    <line x1="225" y1="340" x2="290" y2="400" />
+                    
+                    <!-- Top Beacon dot -->
+                    <circle cx="250" cy="255" r="7" fill="#1e1e48" />
+                    <!-- Ring around top -->
+                    <ellipse cx="250" cy="265" rx="15" ry="5" stroke-width="3" />
+                </g>
+            </svg>
+        </div>
+    </main>
+
+    <script>
+        // Simple script to handle mobile menu toggle
+        document.querySelector('.mobile-menu-btn').addEventListener('click', function() {
+            const links = document.querySelector('.nav-links');
+            if (links.style.display === 'flex') {
+                links.style.display = 'none';
+            } else {
+                links.style.display = 'flex';
+                links.style.flexDirection = 'column';
+                links.style.position = 'absolute';
+                links.style.top = '80px';
+                links.style.left = '0';
+                links.style.width = '100%';
+                links.style.background = '#ffffff';
+                links.style.padding = '20px';
+                links.style.boxShadow = '0 10px 15px rgba(0,0,0,0.1)';
+            }
+        });
+    </script>
+</body>
+</html>

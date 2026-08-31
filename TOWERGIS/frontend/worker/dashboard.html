@@ -1,0 +1,582 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+ 
+<head> 
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Management | Beacon</title> 
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> 
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" /> 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script> 
+
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script> 
+
+    <style> 
+
+        /* ===================================================== 
+            BEACON WORKER DASHBOARD (Dark Blue & White Mix Theme) 
+        ===================================================== */ 
+
+        :root { 
+            --primary: #ffffff;      
+            --primary-hover: #e2e8f0; 
+            --secondary: #3b82f6; 
+            --bg-color: #060b14; 
+            --card-bg: rgba(13, 27, 45, 0.75);  
+            --text-main: #f8fafc; 
+            --text-muted: #94a3b8; 
+            --success: #22c55e; 
+            --danger: #ef4444; 
+            --border: rgba(56, 90, 134, 0.35); 
+            --shadow: 0 20px 50px rgba(0, 0, 0, 0.4); 
+        } 
+
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+        } 
+
+
+        body { 
+
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: radial-gradient(circle at 15% 15%, #1e293b 0%, #0b1329 45%, #060b14 100%); 
+            color: var(--text-main); 
+            min-height: 100vh; 
+            position: relative; 
+            overflow: hidden; 
+
+        } 
+
+        button, 
+        input, 
+        select { 
+            font-family: inherit; 
+        } 
+
+        /* ===================================================== 
+            BACKGROUND WAVE / GLOW ACCENTS 
+        ===================================================== */ 
+        .bg-wave { 
+            position: fixed; 
+            top: 0; 
+            left: 250px; 
+            width: calc(100% - 250px); 
+            height: 100%; 
+            z-index: 0; 
+            pointer-events: none; 
+            opacity: 0.15; 
+        } 
+         
+        .bg-wave svg { 
+            width: 100%; 
+            height: auto; 
+            max-height: 85vh; 
+        } 
+
+        /* ===================================================== 
+            LAYOUT & SIDEBAR 
+        ===================================================== */ 
+        .app { display: flex; height: 100vh; width: 100vw; position: relative; z-index: 1; } 
+
+        .sidebar { 
+            width: 250px; background: rgba(11, 19, 41, 0.95); backdrop-filter: blur(16px); 
+            border-right: 1px solid var(--border); display: flex; flex-direction: column; 
+            position: fixed; top: 0; bottom: 0; left: 0; z-index: 100; 
+        } 
+
+        .logo-area { height: 82px; display: flex; align-items: center; padding: 0 24px; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; gap: 12px; } 
+        .brand-logo { width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; background: transparent; } 
+        .brand-logo img { width: 100%; height: 100%; object-fit: contain; } 
+        .brand-name { font-size: 20px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px; } 
+        .brand-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 2px; } 
+
+        .sidebar-menu { padding: 25px 14px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; } 
+        .menu-label { font-size: 10px; color: #6e8aa5; font-weight: 700; letter-spacing: 1.2px; padding: 0 12px 10px; text-transform: uppercase; } 
+
+        .nav-item { 
+            width: 100%; border: none; background: transparent; color: #a9bdd1; display: flex; align-items: center; gap: 12px; 
+            padding: 13px 14px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; text-align: left; transition: 0.2s; border: 1px solid transparent; 
+        } 
+        .nav-item:hover { background: rgba(255, 255, 255, 0.05); color: white; } 
+        .nav-item.active { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3); } 
+        .nav-icon { width: 22px; text-align: center; font-size: 15px; } 
+
+        .sidebar-footer { padding: 16px; border-top: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; } 
+        .logout-btn { 
+            border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.1); color: #fca5a5; 
+            padding: 11px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: .2s; width: 100%; display: flex; align-items: center; gap: 10px; 
+        } 
+        .logout-btn:hover { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); color: #ffffff; } 
+        .logout-icon { font-size: 16px; } 
+
+        /* ===================================================== 
+            MAIN & TOPBAR 
+        ===================================================== */ 
+        .main { margin-left: 250px; width: calc(100% - 250px); height: 100vh; display: flex; flex-direction: column; overflow-y: auto; } 
+        .header { 
+            height: 82px; background: rgba(11, 19, 41, 0.85); backdrop-filter: blur(16px); 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 0 32px; position: sticky; top: 0; z-index: 50; flex-shrink: 0; 
+        } 
+
+        .top-title { font-size: 18px; font-weight: 700; color: #fff; } 
+        .top-desc { font-size: 12px; color: var(--text-muted); margin-top: 4px; } 
+        
+        /* Online/Offline Dynamic Classes */
+        .system-status { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #cbd5e1; background: rgba(255, 255, 255, 0.05); padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 2px 10px rgba(0,0,0,0.2); transition: all 0.3s ease;} 
+        .status-dot { width: 8px; height: 8px; background-color: var(--success); border-radius: 50%; box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25); transition: all 0.3s ease;} 
+        
+        .system-status.offline { color: #fca5a5; border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.05); }
+        .system-status.offline .status-dot { background-color: var(--danger); box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25); }
+
+        /* ========================================================= 
+            FULL WIDTH NOTICE TICKER & EXACT RED LINE 
+           ========================================================= */ 
+
+        .notice-badge { 
+            background: #e60404; 
+            color: white; 
+            font-size: 10px; 
+            font-weight: 800; 
+            padding: 3px 8px; 
+            border-radius: 4px; 
+            letter-spacing: 0.5px; 
+            margin-right: 15px; 
+            flex-shrink: 0; 
+            animation: pulseBadge 1.5s infinite; 
+        } 
+
+        @keyframes pulseBadge { 
+            0% { opacity: 1; } 
+            50% { opacity: 0.7; } 
+            100% { opacity: 1; } 
+        } 
+
+        .notice-scroll-wrapper { 
+            width: 100%; 
+            overflow: hidden; 
+            white-space: nowrap; 
+        } 
+
+        .notice-text { 
+            display: inline-block; 
+            font-size: 13px; 
+            font-weight: 600; 
+            color: #e40404; 
+            padding-left: 100%; 
+            animation: marqueeScroll 25s linear infinite; 
+        } 
+
+        @keyframes marqueeScroll { 
+            0% { transform: translate(0, 0); } 
+            100% { transform: translate(-100%, 0); } 
+        } 
+
+        /* ===================================================== 
+            VIEW SECTION SYSTEM 
+        ===================================================== */ 
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px 32px; display: flex; flex-direction: column; flex: 1; min-height: 0; } 
+        .view-section { display: none; animation: fadeIn 0.3s ease; flex-direction: column; flex: 1; min-height: 0; } 
+        .view-section.active { display: flex; } 
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } } 
+
+        /* ===================================================== 
+            DASHBOARD PAGE STYLES 
+        ===================================================== */ 
+        .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-shrink: 0;} 
+        .page-label { color: #60a5fa; font-size: 11px; font-weight: 700; letter-spacing: 2px; margin-bottom: 8px; text-transform: uppercase; } 
+        .page-title { font-size: 32px; color: #ffffff; font-weight: 800; margin-bottom: 8px; } 
+        .page-description { color: var(--text-muted); font-size: 14px; } 
+        .refresh-btn { display: none !important; } 
+
+        .worker-info { background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; box-shadow: var(--shadow); } 
+        .worker-details { display: flex; align-items: center; gap: 15px; } 
+        .worker-avatar { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #1e40af); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); } 
+        .worker-name { font-weight: 700; color: #ffffff; font-size: 15px; margin-bottom: 4px; } 
+        .worker-email { color: var(--text-muted); font-size: 12px; } 
+        .role-badge { padding: 6px 12px; border-radius: 20px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; } 
+
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 20px; } 
+        .stat-card { background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--border); border-radius: 16px; padding: 22px; box-shadow: var(--shadow); } 
+        .stat-label { color: var(--text-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; } 
+        .stat-value { font-size: 32px; font-weight: 800; color: #ffffff; } 
+        .stat-small { color: #64748b; font-size: 11px; margin-top: 6px; } 
+        .stat-card.pending { border-top: 4px solid #f59e0b; } 
+        .stat-card.progress { border-top: 4px solid #3b82f6; } 
+        .stat-card.completed { border-top: 4px solid #22c55e; } 
+        .stat-card.total { border-top: 4px solid #a855f7; } 
+
+        .section { background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); display: flex; flex-direction: column; flex: 1; min-height: 0; } 
+        .section-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; } 
+        .section-title { font-size: 16px; font-weight: 700; color: #ffffff; } 
+        .section-subtitle { color: var(--text-muted); font-size: 12px; margin-top: 4px; } 
+
+        .table-wrapper { overflow-x: auto; flex: 1; min-height: 0; } 
+        table { width: 100%; border-collapse: collapse; } 
+        thead { background: rgba(15, 23, 42, 0.4); position: sticky; top: 0; z-index: 10;} 
+        th { text-align: left; padding: 14px 20px; color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .8px; white-space: nowrap; border-bottom: 1px solid var(--border); } 
+        td { padding: 16px 20px; border-bottom: 1px solid var(--border); color: #e2e8f0; font-size: 13px; vertical-align: middle; } 
+        tbody tr { transition: .15s; } 
+        tbody tr:hover { background: rgba(255, 255, 255, 0.03); } 
+        .complaint-id { color: #60a5fa; font-weight: 700; } 
+        .complaint-title { color: #ffffff; font-weight: 600; margin-bottom: 4px; } 
+        .complaint-description { color: var(--text-muted); font-size: 12px; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } 
+
+        .status { display: inline-flex; align-items: center; padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; } 
+        .status.pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); } 
+        .status.in-progress { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); } 
+        .status.completed { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); } 
+        .status.rejected { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); } 
+        .status.unknown { background: rgba(100, 116, 139, 0.15); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.3); } 
+
+        .view-btn { background: transparent; border: 1px solid var(--border); color: #60a5fa; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; transition: .2s; } 
+        .view-btn:hover { background: rgba(59, 130, 246, 0.15); border-color: #60a5fa; } 
+
+        .empty-state { padding: 60px 20px; text-align: center; display: none; } 
+        .empty-icon { font-size: 35px; margin-bottom: 12px; opacity: .7; } 
+        .empty-title { color: #ffffff; font-size: 16px; font-weight: 700; margin-bottom: 6px; } 
+        .empty-text { color: var(--text-muted); font-size: 13px; } 
+
+        .loading { padding: 50px; text-align: center; color: var(--text-muted); display: none; } 
+        .spinner { width: 28px; height: 28px; border: 3px solid rgba(255, 255, 255, 0.1); border-top-color: #3b82f6; border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 12px; } 
+        @keyframes spin { to { transform: rotate(360deg); } } 
+
+        .error-message { display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; padding: 14px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; font-weight: 500; } 
+
+        /* ===================================================== 
+            MAP LAYOUT STYLES (Adapted for Dark Theme) 
+        ===================================================== */ 
+        .map-layout { display: flex; gap: 18px; flex: 1; min-height: 350px; border-radius: 16px; overflow: hidden; margin-top: 10px;} 
+        .map-panel { flex: 1; min-width: 0; position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow);} 
+        .map-panel .leaflet-container { background: #0b1329; width: 100%; height: 100%; z-index: 10; } 
+        .side-panel { width: 340px; flex: none; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding-right: 5px;} 
+        .side-card { background: var(--card-bg); backdrop-filter: blur(14px); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); } 
+
+        .legend-box { position: absolute; bottom: 12px; left: 12px; z-index: 500; background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-size: 11px; backdrop-filter: blur(8px); min-width: 150px; box-shadow: var(--shadow); } 
+        .legend-title { font-weight: 700; color: #fff; margin-bottom: 8px; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; } 
+        .legend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; color: var(--text-muted); } 
+        .legend-swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; } 
+
+        .list-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: .12s; border: 1px solid transparent; } 
+        .list-row:hover { background: rgba(255,255,255,0.05); } 
+        .list-chip { width: 9px; height: 9px; border-radius: 2px; flex: none; } 
+        .list-info { flex: 1; min-width: 0; } 
+        .list-id { font-size: 12px; font-weight: 700; color: #fff; } 
+        .list-meta { font-size: 10.5px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px;} 
+        .list-val { font-size: 11.5px; font-weight: 700; color: #60a5fa; flex: none; } 
+
+        .hotspot-banner { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 12px; background: rgba(220,38,38,0.1); border: 1px solid rgba(220,38,38,0.3); font-size: 13px; color: #fca5a5; margin-bottom: 10px; font-weight: 500; line-height: 1.5; flex-shrink: 0;} 
+        .live-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; color: #4ade80; background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); padding: 4px 10px; border-radius: 20px; margin-right: 5px; } 
+        .live-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; } 
+
+        .btn { background: var(--secondary); border: none; color: #fff; padding: 9px 16px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 12px; transition: .2s; } 
+        .btn:hover { background: #2563eb; } 
+
+        /* Leaflet popups dark theme overrides */ 
+        .pop-box { font-family: 'Inter', sans-serif; font-size: 12.5px; min-width: 190px; color: #f8fafc;} 
+        .pop-box h3 { margin: 0 0 8px; font-size: 14px; color: #60a5fa; font-weight: 700;} 
+        .pop-box .row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed rgba(148,163,184,0.2); } 
+        .pop-box .row span:first-child { color: #94a3b8; } 
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip { background: #0b1329; color: #f8fafc; border: 1px solid var(--border); box-shadow: 0 10px 25px rgba(0,0,0,0.5);} 
+
+        /* ===================================================== 
+            MODAL 
+        ===================================================== */ 
+        .modal-overlay { position: fixed; inset: 0; background: rgba(6, 11, 20, 0.75); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 1000; } 
+        .modal { width: 100%; max-width: 550px; max-height: 90vh; overflow-y: auto; background: #0b1329; border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 25px 80px rgba(0,0,0,0.5); } 
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; } 
+        .modal-title { font-size: 18px; font-weight: 700; color: #ffffff; } 
+        .close-btn { border: none; background: rgba(255, 255, 255, 0.05); width: 30px; height: 30px; border-radius: 8px; color: var(--text-muted); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; } 
+        .close-btn:hover { background: rgba(255, 255, 255, 0.1); color: #ffffff; } 
+        .modal-body { padding: 24px; } 
+        .detail-row { margin-bottom: 18px; background: rgba(255, 255, 255, 0.03); padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border); } 
+        .detail-label { color: var(--text-muted); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; } 
+        .detail-value { color: #e2e8f0; font-size: 14px; line-height: 1.6; font-weight: 500; } 
+        .modal-footer { padding: 18px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; background: rgba(11, 19, 41, 0.5); } 
+        .status-select { background: #060b14; color: #ffffff; border: 1px solid var(--border); padding: 10px 14px; border-radius: 8px; outline: none; font-size: 13px; font-weight: 500; } 
+        .update-btn { background: #3b82f6; border: none; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: .2s; } 
+        .update-btn:hover { background: #2563eb; } 
+
+        @media (max-width: 900px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .map-layout { flex-direction: column; min-height: auto;} .side-panel { width: 100%;} .map-panel {height: 400px; flex: none;}} 
+        @media (max-width: 650px) { .header { padding: 0 16px; } .system-status { display: none; } .container { padding: 25px 15px 50px; } .page-header { flex-direction: column; gap: 15px; } .stats-grid { grid-template-columns: 1fr; } .worker-info { align-items: flex-start; gap: 15px; } .role-badge { display: none; } } 
+    </style> 
+</head> 
+
+<body> 
+
+<div class="bg-wave"> 
+    <svg viewBox="0 0 1440 600" preserveAspectRatio="none"> 
+        <path fill="rgba(59, 130, 246, 0.04)" d="M0,0 L1440,0 L1440,300 C1100,450 900,100 400,350 C200,450 0,300 0,300 Z"></path> 
+    </svg> 
+</div> 
+
+<div class="app"> 
+
+    <aside class="sidebar"> 
+        <div class="logo-area"> 
+            <div class="brand-logo"> 
+                <img src="../logo.png" alt="Beacon Logo"> 
+            </div> 
+            <div> 
+                <div class="brand-name">Beacon</div> 
+                <div class="brand-subtitle">Telecom Tower Management</div> 
+            </div> 
+        </div> 
+
+        <nav class="sidebar-menu"> 
+            <div class="menu-label">ENGINEER CONSOLE</div> 
+            <button class="nav-item active" onclick="switchView('view-dashboard', this)"> 
+                <span class="nav-icon">▦</span> Dashboard 
+            </button> 
+            <button class="nav-item" onclick="switchView('view-facility', this)"> 
+                <span class="nav-icon">☗</span> Nearest Facility 
+            </button> 
+            <button class="nav-item" onclick="switchView('view-flood', this)"> 
+                <span class="nav-icon">▼</span> Flood Map 
+            </button> 
+        </nav> 
+
+        <div class="sidebar-footer"> 
+            <button class="logout-btn" id="logoutButton" title="Logout"> 
+                <span class="logout-icon">⇥</span> 
+                <span>Secure Logout</span> 
+            </button> 
+        </div> 
+    </aside> 
+
+    <main class="main"> 
+
+        <header class="header"> 
+            <div> 
+                <div class="top-title">Engineer Terminal</div> 
+                <div class="top-desc">Field Operations & Management</div> 
+            </div> 
+            <div class="header-right"> 
+                <div class="system-status" id="networkStatusBox"> 
+                    <span class="status-dot" id="networkStatusDot"></span> 
+                    <span id="networkStatusText">System Online</span> 
+                </div> 
+            </div> 
+        </header> 
+
+        <div class="notice-ticker-container" id="noticeTickerBox" style="display:none;"> 
+            <div class="notice-badge">NOTICE</div> 
+            <div class="notice-scroll-wrapper"> 
+                <div class="notice-text" id="liveNoticeText">Loading announcements...</div> 
+            </div> 
+        </div> 
+
+        <div class="container"> 
+             
+            <div id="errorMessage" class="error-message"></div> 
+
+            <div id="view-dashboard" class="view-section active"> 
+                <div class="page-header"> 
+                    <div> 
+                        <div class="page-label">Management Panel</div> 
+                    </div> 
+                    <button class="refresh-btn" id="refreshButton">↻ Refresh</button> 
+                </div> 
+
+                <section class="worker-info"> 
+                    <div class="worker-details"> 
+                        <div class="worker-avatar" id="workerAvatar">W</div> 
+                        <div> 
+                            <div class="worker-name" id="workerName">Loading worker...</div> 
+                            <div class="worker-email" id="workerEmail">Loading...</div> 
+                        </div> 
+                    </div> 
+                    <div class="role-badge">Engineer</div> 
+                </section> 
+
+                <section class="stats-grid"> 
+                    <div class="stat-card total"> 
+                        <div class="stat-label">Total Complaints</div> 
+                        <div class="stat-value" id="totalComplaints">0</div> 
+                        <div class="stat-small">Assigned to you</div> 
+                    </div> 
+                    <div class="stat-card pending"> 
+                        <div class="stat-label">Pending</div> 
+                        <div class="stat-value" id="pendingComplaints">0</div> 
+                        <div class="stat-small">Awaiting action</div> 
+                    </div> 
+                    <div class="stat-card progress"> 
+                        <div class="stat-label">In Progress</div> 
+                        <div class="stat-value" id="progressComplaints">0</div> 
+                        <div class="stat-small">Currently working</div> 
+                    </div> 
+                    <div class="stat-card completed"> 
+                        <div class="stat-label">Completed</div> 
+                        <div class="stat-value" id="completedComplaints">0</div> 
+                        <div class="stat-small">Successfully resolved</div> 
+                    </div> 
+                </section> 
+
+                <section class="section"> 
+                    <div class="section-header"> 
+                        <div> 
+                            <div class="section-title">My Complaints</div> 
+                            <div class="section-subtitle">Complaints assigned to this engineer</div> 
+                        </div> 
+                    </div> 
+
+                    <div id="loading" class="loading"> 
+                        <div class="spinner"></div> 
+                        Loading complaints... 
+                    </div> 
+
+                    <div class="table-wrapper" id="tableWrapper"> 
+                        <table> 
+                            <thead> 
+                                <tr> 
+                                    <th>Complaint</th> 
+                                    <th>Title</th> 
+                                    <th>Status</th> 
+                                    <th>Customer</th> 
+                                    <th>Date</th> 
+                                    <th>Action</th> 
+                                </tr> 
+                            </thead> 
+                            <tbody id="complaintsTable"></tbody> 
+                        </table> 
+                    </div> 
+
+                    <div id="emptyState" class="empty-state"> 
+                        <div class="empty-icon">✓</div> 
+                        <div class="empty-title">No complaints assigned</div> 
+                        <div class="empty-text">You currently have no complaints to work on.</div> 
+                    </div> 
+                </section> 
+            </div> 
+
+            <div id="view-facility" class="view-section"> 
+                <div class="page-header" style="margin-bottom: 10px;"> 
+                </div> 
+
+                <div class="map-layout"> 
+                    <div class="map-panel"> 
+                        <div id="facilityMap" style="height:100%; width:100%;"></div> 
+                        <div class="legend-box"> 
+                            <div class="legend-title">Operator Legend</div> 
+                            <div class="legend-row"><span class="legend-swatch" style="background:#1e3a8a"></span>Jio Tower</div> 
+                            <div class="legend-row"><span class="legend-swatch" style="background:#dc2626"></span>Airtel Tower</div> 
+                            <div class="legend-row"><span class="legend-swatch" style="background:#4ade80"></span>BSNL Tower</div> 
+                            <div class="legend-row"><span class="legend-swatch" style="background:#facc15"></span>Vi Tower</div> 
+                            <div class="legend-row" style="margin-top:6px; border-top:1px solid (255,255,255,0.1); padding-top:4px;"><span class="legend-swatch" style="background:#9304f3; transform:rotate(45deg);"></span>Maintenance Facility</div> 
+                        </div> 
+                    </div> 
+                     
+                    <div class="side-panel"> 
+                        <div class="side-card" id="routeSelectionCard"> 
+                            <h3 class="section-title" id="routeSelTitle" style="margin-bottom:6px; font-size: 15px;">Select a tower</h3> 
+                            <p class="section-subtitle" id="routeStatus" style="margin-bottom:16px;">Click any tower on the map to find its nearest maintenance facility, road distance, and drive time.</p> 
+                            <div id="routeResults" style="display:flex; flex-direction:column; gap:8px;"></div> 
+                        </div> 
+
+                        <div class="side-card"> 
+                            <h3 class="section-title" style="margin-bottom:6px; font-size: 15px;">Assigned Complaint Locations</h3> 
+                            <p class="section-subtitle" style="margin-bottom:14px;">Click 'View Map' to locate where complaints were raised.</p> 
+                            <div id="facilityComplaintsList" style="display:flex; flex-direction:column; gap:8px; max-height: 250px; overflow-y: auto;"> 
+                                <div style="color:var(--text-muted); font-size:12px; text-align:center; padding:10px;">Loading complaints...</div> 
+                            </div> 
+                        </div> 
+                    </div> 
+                </div> 
+            </div> 
+
+            <div id="view-flood" class="view-section"> 
+                <div class="page-header" style="margin-bottom: 10px;"> 
+                    <div>
+                        <p class="page-description">Live monsoon risk overlay across monitored towers based on rainfall and river discharge.</p> 
+                    </div> 
+                </div> 
+
+                <div class="hotspot-banner" id="floodBanner"> 
+                    Loading live rainfall & river data… 
+                </div> 
+
+                <div class="map-layout" style="margin-top:0;"> 
+                    <div class="map-panel"> 
+                        <div id="floodMap" style="height:100%; width:100%;"></div> 
+                        <div class="legend-box"> 
+                            <div class="legend-title">Flood Risk</div> 
+                            <div class="legend-row"><span class="legend-swatch" style="background:#0120e8"></span>Low</div> 
+                            <div class="legend-row"><span class="legend-swatch" style="background:#04b5f6"></span>Medium</div> 
+                            <div class="legend-row"><span class="legend-swatch" style="background:#f87171"></span>High</div> 
+                            <div class="legend-row"><span class="legend-swatch" style="background:#dc2626"></span>Critical</div> 
+                        </div> 
+                    </div> 
+                     
+                    <div class="side-panel"> 
+                        <div class="side-card"> 
+                            <h3 class="section-title" style="margin-bottom:16px; font-size: 15px;">Live Conditions</h3> 
+                            <div class="section-subtitle">Rainfall (Pune, now)</div> 
+                            <div class="stat-value" id="floodRain" style="font-size:24px; margin:4px 0 16px; color:#60a5fa;">–</div> 
+                            <div class="section-subtitle">River discharge (Mula-Mutha)</div> 
+                            <div class="stat-value" id="floodRiver" style="font-size:24px; margin:4px 0; color:#60a5fa;">–</div> 
+                        </div> 
+
+                        <div class="side-card"> 
+                            <h3 class="section-title" style="margin-bottom:16px; font-size: 15px;">Towers by Risk Category</h3> 
+                            <div id="riskCategoryCounts" style="display:flex; flex-direction:column; gap:12px; max-height: 250px; overflow-y: auto; padding-right: 5px;"></div> 
+                        </div> 
+                    </div> 
+                </div> 
+            </div> 
+
+        </div> 
+    </main> 
+</div> 
+
+<div class="modal-overlay" id="complaintModal"> 
+    <div class="modal"> 
+        <div class="modal-header"> 
+            <div class="modal-title">Complaint Details</div> 
+            <button class="close-btn" id="closeModal">×</button> 
+        </div> 
+        <div class="modal-body" id="modalBody"></div> 
+        <div class="modal-footer"> 
+            <select class="status-select" id="statusSelect"> 
+                <option value="Pending">Pending</option> 
+                <option value="In Progress">In Progress</option> 
+                <option value="Resolved">Resolved</option> 
+                <option value="Rejected">Rejected</option> 
+            </select> 
+            <button class="update-btn" id="updateStatusButton">Update Status</button> 
+        </div> 
+    </div> 
+</div> 
+
+<script src="js/worker.js"></script> 
+
+<script>
+    function updateNetworkStatus() {
+        const statusBox = document.getElementById('networkStatusBox');
+        const statusDot = document.getElementById('networkStatusDot');
+        const statusText = document.getElementById('networkStatusText');
+
+        if (navigator.onLine) {
+            statusBox.classList.remove('offline');
+            statusDot.classList.remove('offline');
+            statusText.textContent = "System Online";
+        } else {
+            statusBox.classList.add('offline');
+            statusDot.classList.add('offline');
+            statusText.textContent = "System Offline";
+        }
+    }
+
+    // Listen for network events
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+
+    // Set initial status on load
+    updateNetworkStatus();
+</script>
+
+</body> 
+</html>"
