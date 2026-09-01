@@ -7,3 +7,4 @@ geoalchemy2
 python-jose[cryptography]
 passlib[bcrypt]
 python-multipart
+PyJWT
