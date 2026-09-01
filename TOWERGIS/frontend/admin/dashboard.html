@@ -9,6 +9,16 @@
 
     <!-- SUPABASE CLIENT CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- LEAFLET MAP CSS & JS --> 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" /> 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script> 
+
+    <!-- LEAFLET HEATMAP PLUGIN --> 
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script> 
+
+    <!-- CHART.JS (ADMIN ANALYTICS) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 
 <body>
@@ -26,7 +36,6 @@
 <aside class="sidebar">
 
     <div class="brand">
-        <!-- FIXED LOGO PATH POINTING TO ROOT DIRECTORY -->
         <div class="brand-icon">
             <img src="../logo.png" alt="Beacon Logo" style="width: 100%; height: 100%; object-fit: contain;">
         </div>
@@ -44,13 +53,26 @@
             <span>👥</span> Users
         </button>
         <button class="nav-item" data-section="workers">
-            <span>👷</span> Workers
+            <span>👷</span> Technician
         </button>
         <button class="nav-item" data-section="towers">
             <span>📡</span> Towers
         </button>
         <button class="nav-item" data-section="complaints">
             <span>⚠</span> Complaints
+        </button>
+        <button class="nav-item" data-section="heatmap">
+            <span>🗺️</span> Heatmap
+        </button>
+        <!-- NEW: SUSCEPTIBILITY MAP NAVIGATION -->
+        <button class="nav-item" data-section="susceptibility">
+            <span>🗺️</span> Susceptibility Map
+        </button>
+        <button class="nav-item" data-section="facility">
+            <span>☗</span> Facility Map
+        </button>
+        <button class="nav-item" data-section="flood">
+            <span>▼</span> Flood Map
         </button>
     </nav>
 
@@ -97,52 +119,60 @@
             <div>
                 <span class="eyebrow">Beacon CONTROL CENTER</span>
                 <h2>Welcome, <span id="welcomeAdminName">Administrator</span></h2>
-                <p>Monitor telecom infrastructure, manage workers, review complaints and control the Beacon system.</p>
+                <p>Monitor telecom infrastructure, manage technicians, review complaints and control the Beacon system.</p>
             </div>
             <div class="system-status">
                 <span class="status-dot"></span> System Online
             </div>
         </div>
 
-        <!-- STATISTICS -->
+        <!-- STATISTICS GRID -->
         <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">👥</div>
-                <div>
-                    <span>Total Users</span>
-                    <strong id="totalUsers">9</strong>
-                </div>
-            </div>
-
             <div class="stat-card">
                 <div class="stat-icon">👤</div>
                 <div>
                     <span>Customers</span>
-                    <strong id="totalCustomers">5</strong>
+                    <strong id="totalCustomers">0</strong>
                 </div>
             </div>
 
             <div class="stat-card">
                 <div class="stat-icon">👷</div>
                 <div>
-                    <span>Workers</span>
-                    <strong id="totalWorkers">3</strong>
+                    <span>Technicians</span>
+                    <strong id="totalWorkers">0</strong>
                 </div>
             </div>
 
-            <div class="stat-card">
+            <div class="stat-card clickable-card" onclick="filterDashboardTowerMap('all')">
                 <div class="stat-icon">📡</div>
                 <div>
                     <span>Total Towers</span>
-                    <strong id="totalTowers">10</strong>
+                    <strong id="totalTowers">0</strong>
                 </div>
             </div>
 
-            <div class="stat-card">
-                <div class="stat-icon">🟢</div>
+            <div class="stat-card clickable-card" onclick="filterDashboardTowerMap('operational')">
+                <div class="stat-icon" style="background: rgba(34, 197, 94, 0.15); color: #4ade80;">🟢</div>
                 <div>
                     <span>Active Towers</span>
-                    <strong id="activeTowers">9</strong>
+                    <strong id="activeTowers" style="color: #4ade80;">0</strong>
+                </div>
+            </div>
+
+            <div class="stat-card clickable-card" onclick="filterDashboardTowerMap('maintenance')">
+                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.15); color: #facc15;">🟡</div>
+                <div>
+                    <span>Under Maintenance</span>
+                    <strong id="maintenanceTowers" style="color: #facc15;">0</strong>
+                </div>
+            </div>
+
+            <div class="stat-card clickable-card" onclick="filterDashboardTowerMap('inactive')">
+                <div class="stat-icon" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">🔴</div>
+                <div>
+                    <span>Not Active Towers</span>
+                    <strong id="inactiveTowers" style="color: #f87171;">0</strong>
                 </div>
             </div>
 
@@ -163,12 +193,91 @@
             </div>
         </div>
 
+        <!-- MAIN DASHBOARD SPLIT -->
+        <div class="dashboard-main-split">
+            <div class="dash-map-container">
+                <div class="dash-map-header">
+                    <div>
+                        <h4>Telecom Tower Status & Coverage Map</h4>
+                        <span id="activeMapFilterLabel">Showing: All Infrastructure</span>
+                    </div>
+                    <div class="map-quick-filters">
+                        <button class="filter-pill active" id="btnFilterAll" onclick="filterDashboardTowerMap('all')">All</button>
+                        <button class="filter-pill green" id="btnFilterActive" onclick="filterDashboardTowerMap('operational')">Active</button>
+                        <button class="filter-pill yellow" id="btnFilterMaint" onclick="filterDashboardTowerMap('maintenance')">Maintenance</button>
+                        <button class="filter-pill red" id="btnFilterInactive" onclick="filterDashboardTowerMap('inactive')">Not Active</button>
+                    </div>
+                </div>
+                
+                <div style="position:relative; flex:1; display:flex; flex-direction:column; overflow: hidden; border-radius: 0 0 16px 16px;">
+                    <button class="map-locate-btn" onclick="locateAdminGPS('dashboard')" title="Locate Me">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1e1e48" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3m0 14v3M2 12h3m14 0h3"></path></svg>
+                    </button>
+                    <div id="dashTowerMap" class="dash-leaflet-map"></div>
+                    
+                    <div class="legend-box" style="position: absolute; bottom: 20px; left: 20px; z-index: 1000; background: rgba(13, 27, 45, 0.9); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-size: 11px; backdrop-filter: blur(8px); box-shadow: var(--shadow);">
+                        <div class="legend-title" style="font-weight: 700; color: #fff; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px;">Status Legend</div>
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; color:#cbd5e1;"><span style="width:10px;height:10px;border-radius:3px;background:#22c55e;"></span>Active / Operational</div>
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; color:#cbd5e1;"><span style="width:10px;height:10px;border-radius:3px;background:#f59e0b;"></span>Under Maintenance</div>
+                        <div style="display:flex; align-items:center; gap:8px; color:#cbd5e1;"><span style="width:10px;height:10px;border-radius:3px;background:#ef4444;"></span>Not Active</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANALYTICS SIDEBAR -->
+            <div class="dash-analytics-sidebar">
+                <div class="analytics-sidebar-title">
+                    <h4>Operations Analytics</h4>
+                    <span>Live Telemetry & Breakdown</span>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div>
+                            <h4>Complaints by Status</h4>
+                            <span>Current ticket distribution</span>
+                        </div>
+                        <span class="chart-badge" id="chartComplaintsTotal">0 total</span>
+                    </div>
+                    <div class="chart-canvas-wrap">
+                        <canvas id="chartComplaintsStatus"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div>
+                            <h4>Towers by Operator</h4>
+                            <span>Registered infrastructure</span>
+                        </div>
+                        <span class="chart-badge" id="chartTowersTotal">0 towers</span>
+                    </div>
+                    <div class="chart-canvas-wrap">
+                        <canvas id="chartTowersOperator"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div>
+                            <h4>Complaint Trend</h4>
+                            <span>New tickets per day</span>
+                        </div>
+                        <span class="chart-badge">Last 14 days</span>
+                    </div>
+                    <div class="chart-canvas-wrap">
+                        <canvas id="chartComplaintsTrend"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- ADMIN NOTICE MANAGEMENT CARD -->
         <div class="card" style="margin-top: 20px; background: var(--card, rgba(13, 27, 45, 0.90)); border: 1px solid var(--border); border-radius: 16px; padding: 24px; color: var(--text);">
             <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
                 <div>
                     <h3 style="font-size: 16px; font-weight: 700; color: #fff;">Broadcast System Notice</h3>
-                    <p style="font-size: 12px; color: var(--muted);">Publish running alerts to worker terminals.</p>
+                    <p style="font-size: 12px; color: var(--muted);">Publish running alerts to technician terminals.</p>
                 </div>
             </div>
             <div class="card-body">
@@ -183,7 +292,6 @@
                 </div>
             </div>
         </div>
-
     </section>
 
     <!-- =====================================================
@@ -205,7 +313,6 @@
                     <span id="userCount">0 customers</span>
                 </div>
             </div>
-
             <div class="table-wrapper">
                 <table>
                     <thead>
@@ -232,17 +339,17 @@
     <section id="workersSection" class="page-section hidden">
         <div class="section-header">
             <div>
-                <h2>Worker Management</h2>
-                <p>Create and manage Beacon field workers.</p>
+                <h2>Technician Management</h2>
+                <p>Create and manage Beacon field technicians.</p>
             </div>
-            <button id="showWorkerFormBtn" class="primary-btn">+ Create Worker</button>
+            <button id="showTechnicianFormBtn" class="primary-btn">+ Create Technician</button>
         </div>
 
         <!-- CREATE WORKER MODAL -->
         <div id="workerFormCard" class="form-card hidden">
             <div class="form-card-header">
                 <div>
-                    <h3>Create Worker Account</h3>
+                    <h3>Create Technician Account</h3>
                     <p>Worker accounts are created only by administrators.</p>
                 </div>
                 <button id="closeWorkerFormBtn" class="close-btn">×</button>
@@ -268,7 +375,7 @@
 
                 <div class="form-actions">
                     <button type="button" id="cancelWorkerBtn" class="secondary-btn">Cancel</button>
-                    <button type="submit" class="primary-btn">Create Worker</button>
+                    <button type="submit" class="primary-btn">Create Technician</button>
                 </div>
             </form>
         </div>
@@ -307,8 +414,8 @@
         <div class="table-card">
             <div class="table-header">
                 <div>
-                    <h3>Registered Workers</h3>
-                    <span id="workerCount">0 workers</span>
+                    <h3>Registered Technicians</h3>
+                    <span id="workerCount">0 technicians</span>
                 </div>
                 <button id="refreshWorkersBtn" class="secondary-btn">↻ Refresh</button>
             </div>
@@ -338,7 +445,7 @@
         <div class="section-header">
             <div>
                 <h2>Tower Management</h2>
-                <p>Register telecom towers in the Beacon database.</p>
+                <p>Register telecom towers in the Cloud Supabase database.</p>
             </div>
         </div>
 
@@ -353,22 +460,22 @@
             <form id="towerForm" style="padding-top: 15px;">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="towerCode">Tower Code</label>
-                        <input id="towerCode" type="text" placeholder="TWR-PUN-011" required>
+                        <label for="towerCode">Tower Code (tower_id)</label>
+                        <input id="towerCode" type="text" placeholder="T956" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="towerName">Tower Name</label>
-                        <input id="towerName" type="text" placeholder="Pune Central Tower" required>
+                        <label for="towerName">Tower Name (tower_type)</label>
+                        <input id="towerName" type="text" placeholder="Pune Circle" required>
                     </div>
 
                     <div class="form-group">
                         <label for="towerOperator">Operator</label>
-                        <input id="towerOperator" type="text" placeholder="Jio / Airtel / Vi">
+                        <input id="towerOperator" type="text" placeholder="VI / Jio / Airtel">
                     </div>
 
                     <div class="form-group">
-                        <label for="towerTechnology">Technology</label>
+                        <label for="towerTechnology">Technology (network)</label>
                         <select id="towerTechnology">
                             <option value="5G + 4G VoLTE">5G + 4G VoLTE</option>
                             <option value="4G LTE Only">4G LTE Only</option>
@@ -387,22 +494,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="towerRadius">Coverage Radius (km)</label>
+                        <label for="towerRadius">Coverage Radius (cov_radius)</label>
                         <input id="towerRadius" type="number" step="0.1" min="0.1" value="2" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="towerStatus">Status</label>
-                        <select id="towerStatus">
-                            <option value="active">Active</option>
-                            <option value="maintenance">Maintenance</option>
-                            <option value="offline">Offline</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="towerAddress">Address</label>
-                        <textarea id="towerAddress" rows="3" placeholder="Tower address / Locality"></textarea>
                     </div>
                 </div>
 
@@ -443,7 +536,7 @@
                             <th>Subject</th>
                             <th>Category / Area</th>
                             <th>Status</th>
-                            <th>Assign Worker</th>
+                            <th>Assign Technician</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -455,13 +548,159 @@
         </div>
     </section>
 
+    <!-- =====================================================
+         HEATMAP SECTION 
+    ====================================================== -->
+    <section id="heatmapSection" class="page-section hidden" style="height: 100%; display: flex; flex-direction: column;">
+        <div class="page-header" style="margin-bottom: 10px;">
+            <div>
+                <div class="page-label">Coverage & Risk Analysis</div>
+                <h1 class="page-title">5G/4G Network & Complaint Heatmap</h1>
+                <p class="page-description">Interactive GeoServer network layers combined with live 3-class customer complaint density hotspots.</p>
+            </div>
+        </div>
+        <div style="position:relative; flex:1; display:flex; flex-direction:column; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow);">
+            <button class="map-locate-btn" onclick="locateAdminGPS('heatmap')" title="Locate Me">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1e1e48" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3m0 14v3M2 12h3m14 0h3"></path></svg>
+            </button>
+            <div id="heatmapContainer" style="width: 100%; height: 550px; background: #0b1329;"></div>
+            <div class="legend-box" style="position: absolute; bottom: 20px; left: 20px; z-index: 1000; background: rgba(13, 27, 45, 0.9); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-size: 11px; backdrop-filter: blur(8px); box-shadow: var(--shadow);">
+                <div class="legend-title" style="font-weight: 700; color: #fff; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px;">Heatmap Density (3 Classes)</div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; color:#cbd5e1;"><span style="width:10px;height:10px;border-radius:3px;background:#ef4444;"></span>Class 1: High Density (Hotspot)</div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; color:#cbd5e1;"><span style="width:10px;height:10px;border-radius:3px;background:#f59e0b;"></span>Class 2: Moderate Activity</div>
+                <div style="display:flex; align-items:center; gap:8px; color:#cbd5e1;"><span style="width:10px;height:10px;border-radius:3px;background:#3b82f6;"></span>Class 3: Low Density / Base</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- =====================================================
+         NEW: SUSCEPTIBILITY MAP SECTION
+    ====================================================== -->
+    <section id="susceptibilitySection" class="page-section hidden" style="height: 100%; display: flex; flex-direction: column;"> 
+        <div class="page-header" style="margin-bottom: 10px;"> 
+            <div>
+                <div class="page-label">Spatial Analysis</div>
+                <h1 class="page-title">Tower Susceptibility Map</h1>
+                <p class="page-description">GeoServer suitability overlay with existing telecom infrastructure.</p>
+            </div>
+        </div> 
+
+        <div class="map-layout" style="margin-top:0;"> 
+            <div class="map-panel" style="position: relative; overflow: hidden; flex: 1;"> 
+                <button class="map-locate-btn" onclick="locateAdminGPS('susceptibility')" title="Locate Me">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1e1e48" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3m0 14v3M2 12h3m14 0h3"></path></svg>
+                </button>
+                <div id="susceptibilityMap" style="height:100%; width:100%;"></div> 
+                <div class="legend-box" style="z-index: 1000; bottom: 12px; left: 12px;"> 
+                    <div class="legend-title">Suitability & Towers</div> 
+                    <div class="legend-row"><span class="legend-swatch" style="background:#22c55e;"></span>High Suitability</div> 
+                    <div class="legend-row"><span class="legend-swatch" style="background:#facc15;"></span>Moderate Suitability</div> 
+                    <div class="legend-row"><span class="legend-swatch" style="background:#ef4444;"></span>Low Suitability</div> 
+                    <div class="legend-row" style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.1); padding-top:4px;">
+                        <span class="legend-swatch" style="background:#3b82f6; border-radius:50%;"></span> Existing Towers
+                    </div> 
+                </div> 
+            </div> 
+        </div> 
+    </section>
+
+    <!-- =====================================================
+         FACILITY MAP SECTION
+    ====================================================== -->
+    <section id="facilitySection" class="page-section hidden"> 
+        <div class="page-header" style="margin-bottom: 10px;"> 
+            <div>
+                <div class="page-label">Logistics</div>
+                <h1 class="page-title">Nearest Facility Finder</h1>
+                <p class="page-description">Locate the closest maintenance station for any tower using OSRM live routing.</p>
+            </div>
+        </div> 
+
+        <div class="map-layout"> 
+            <div class="map-panel" style="position: relative; overflow: hidden;"> 
+                <button class="map-locate-btn" onclick="locateAdminGPS('facility')" title="Locate Me">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1e1e48" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3m0 14v3M2 12h3m14 0h3"></path></svg>
+                </button>
+                <div id="facilityMap" style="height:100%; width:100%;"></div> 
+                <div class="legend-box" style="bottom: 12px; left: 12px;"> 
+                    <div class="legend-title">Operator Legend</div> 
+                    <div class="legend-row"><span class="legend-swatch" style="background:#1e3a8a"></span>Jio Tower</div> 
+                    <div class="legend-row"><span class="legend-swatch" style="background:#dc2626"></span>Airtel Tower</div> 
+                    <div class="legend-row"><span class="legend-swatch" style="background:#4ade80"></span>BSNL Tower</div> 
+                    <div class="legend-row"><span class="legend-swatch" style="background:#facc15"></span>Vi Tower</div> 
+                    <div class="legend-row" style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.1); padding-top:4px;"><span class="legend-swatch" style="background:#9304f3; transform:rotate(45deg);"></span>Maintenance Facility</div> 
+                </div> 
+            </div> 
+                
+            <div class="side-panel"> 
+                <div class="side-card" id="routeSelectionCard"> 
+                    <h3 class="section-title" id="routeSelTitle" style="margin-bottom:6px; font-size: 15px;">Select a tower</h3> 
+                    <p class="section-subtitle" id="routeStatus" style="margin-bottom:16px;">Click any tower on the map to find its nearest maintenance facility, road distance, and drive time.</p> 
+                    <div id="routeResults" style="display:flex; flex-direction:column; gap:8px;"></div> 
+                </div> 
+
+                <div class="side-card"> 
+                    <h3 class="section-title" style="margin-bottom:6px; font-size: 15px;">Assigned Complaint Locations</h3> 
+                    <p class="section-subtitle" style="margin-bottom:14px;">Click 'View Map' to locate where complaints were raised.</p> 
+                    <div id="facilityComplaintsList" style="display:flex; flex-direction:column; gap:8px; max-height: 250px; overflow-y: auto;"> 
+                        <div style="color:var(--muted); font-size:12px; text-align:center; padding:10px;">Loading complaints...</div> 
+                    </div> 
+                </div> 
+            </div> 
+        </div> 
+    </section>
+
+    <!-- =====================================================
+         FLOOD MAP SECTION
+    ====================================================== -->
+    <section id="floodSection" class="page-section hidden"> 
+        <div class="page-header" style="margin-bottom: 10px;"> 
+            <div>
+                <div class="page-label">Environment</div>
+                <h1 class="page-title">Flood Risk Map</h1>
+                <p class="page-description">Live monsoon risk overlay across monitored towers based on rainfall and river discharge.</p> 
+            </div> 
+        </div> 
+
+        <div class="hotspot-banner" id="floodBanner"> 
+            Loading live rainfall & river data… 
+        </div> 
+
+        <div class="map-layout" style="margin-top:0;"> 
+            <div class="map-panel" style="position: relative; overflow: hidden;"> 
+                <button class="map-locate-btn" onclick="locateAdminGPS('flood')" title="Locate Me">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1e1e48" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3m0 14v3M2 12h3m14 0h3"></path></svg>
+                </button>
+                <div id="floodMap" style="height:100%; width:100%;"></div> 
+                <div class="legend-box" style="bottom: 12px; left: 12px;"> 
+                    <div class="legend-title">Flood Risk</div> 
+                    <div class="legend-row"><span class="legend-swatch" style="background:#0120e8"></span>Low</div> 
+                    <div class="legend-row"><span class="legend-swatch" style="background:#04b5f6"></span>Medium</div> 
+                    <div class="legend-row"><span class="legend-swatch" style="background:#f87171"></span>High</div> 
+                    <div class="legend-row"><span class="legend-swatch" style="background:#dc2626"></span>Critical</div> 
+                </div> 
+            </div> 
+                
+            <div class="side-panel"> 
+                <div class="side-card"> 
+                    <h3 class="section-title" style="margin-bottom:16px; font-size: 15px;">Live Conditions</h3> 
+                    <div class="section-subtitle">Rainfall (Pune, now)</div> 
+                    <div class="stat-value" id="floodRain" style="font-size:24px; margin:4px 0 16px; color:#60a5fa;">–</div> 
+                    <div class="section-subtitle">River discharge (Mula-Mutha)</div> 
+                    <div class="stat-value" id="floodRiver" style="font-size:24px; margin:4px 0; color:#60a5fa;">–</div> 
+                </div> 
+
+                <div class="side-card"> 
+                    <h3 class="section-title" style="margin-bottom:16px; font-size: 15px;">Towers by Risk Category</h3> 
+                    <div id="riskCategoryCounts" style="display:flex; flex-direction:column; gap:12px; max-height: 250px; overflow-y: auto; padding-right: 5px;"></div> 
+                </div> 
+            </div> 
+        </div> 
+    </section>
+
 </main>
 
-<!-- TOAST -->
-<div id="toast" class="toast">
-    <span id="toastMessage">Message</span>
-</div>
-
+<div id="toast" class="toast"><span id="toastMessage"></span></div>
 <script src="js/admin.js"></script>
 </body>
 </html>

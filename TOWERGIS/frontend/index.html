@@ -5,32 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Beacon | Connect the World</title>
 
-    <style>
-        /* =========================================================
-           BEACON LANDING PAGE
-           ========================================================= */
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
 
+    <style>
         :root {
-            --primary: #1e1e48;     /* Dark navy for brand text/buttons */
-            --primary-hover: #2c2c68;
-            --bg-color: #ffffff;
-            --wave-color: #e6edf4;  /* Soft blue-gray for the background wave */
-            --text-main: #172033;
-            --text-muted: #64748b;
+            --text-main: #0f172a;        /* Dark slate main text */
+            --text-muted: #334155;       /* Muted dark body text */
+            --accent-glow: #0284c7;      /* Darker sky-blue accent */
+            --beacon-blue: #092c5a;     /* Deep Beacon Blue shade for Footer */
+            
+            --font-logo: 'Colasta', 'Syne', sans-serif;
+            --font-body: 'Methane', 'Plus Jakarta Sans', sans-serif;
+
+            /* Light Glassmorphic Card Styling */
+            --glass-bg: rgba(255, 255, 255, 0.45);
+            --glass-border: rgba(15, 23, 42, 0.12);
+            --glass-blur: blur(28px);
+            --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        @font-face {
+            font-family: 'Colasta';
+            src: local('Colasta');
+            font-weight: bold;
+        }
+        @font-face {
+            font-family: 'Methane';
+            src: local('Methane');
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: var(--font-body);
+        }
+
+        html, body {
+            min-height: 100vh;
+            overflow-y: auto;
+            scroll-behavior: smooth;
         }
 
         body {
-            background-color: var(--bg-color);
+            background-color: #f8fafc;
             color: var(--text-main);
-            overflow-x: hidden;
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
         a {
@@ -38,389 +62,846 @@
             color: inherit;
         }
 
-        /* =========================================================
-           BACKGROUND WAVE
-           ========================================================= */
-        .bg-wave {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: -1;
-        }
-        
-        .bg-wave svg {
-            width: 100%;
-            height: auto;
-            max-height: 85vh;
+        /* BACKGROUND MEDIA */
+        .bg-viewport {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            pointer-events: none;
+            overflow: hidden;
         }
 
-        /* =========================================================
-           NAVIGATION
-           ========================================================= */
+        .bg-image {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: none;
+        }
+
+        .bg-overlay {
+            display: none;
+        }
+
+        .radar-rings {
+            position: absolute;
+            top: 50%;
+            left: 65%;
+            transform: translate(-50%, -50%);
+            width: 900px;
+            height: 900px;
+            border-radius: 50%;
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            pointer-events: none;
+        }
+
+        .radar-rings::before,
+        .radar-rings::after {
+            content: '';
+            position: absolute;
+            inset: 18%;
+            border-radius: 50%;
+            border: 1px dashed rgba(2, 132, 199, 0.25);
+        }
+
+        .radar-rings::after {
+            inset: 38%;
+            border: 1px solid rgba(15, 23, 42, 0.1);
+        }
+
+        /* NAVIGATION BAR */
         .navbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 5%;
+            padding: 20px 6%;
             max-width: 1400px;
             margin: 0 auto;
+            width: 100%;
             position: relative;
             z-index: 10;
         }
 
-        .nav-logo {
+        .nav-brand {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-weight: 800;
-            font-size: 22px;
-            color: var(--primary);
+            gap: 14px;
         }
 
-        /* Mini Logo for Navbar */
-        .mini-logo-svg {
-            width: 45px;
-            height: 45px;
+        .nav-logo-wrapper {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            padding: 0;
+            box-shadow: none;
+        }
+
+        .nav-logo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .nav-title {
+            font-family: var(--font-logo);
+            font-weight: 800;
+            font-size: 26px;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
         }
 
         .nav-links {
             display: flex;
-            gap: 35px;
+            gap: 40px;
             align-items: center;
         }
 
         .nav-links a {
             font-size: 15px;
-            font-weight: 500;
-            color: var(--text-main);
-            transition: color 0.2s;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: color 0.25s;
         }
 
         .nav-links a:hover {
-            color: var(--primary);
+            color: var(--text-main);
         }
 
-        .btn-get-started {
-            background: var(--primary);
-            color: white !important;
-            padding: 10px 24px;
+        .btn-login {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            color: var(--text-main) !important;
+            padding: 10px 28px;
             border-radius: 30px;
-            font-weight: 600;
-            transition: background 0.2s, transform 0.2s;
+            font-weight: 700;
+            transition: all 0.3s ease;
         }
 
-        .btn-get-started:hover {
-            background: var(--primary-hover);
+        .btn-login:hover {
+            background: rgba(255, 255, 255, 0.8);
+            border-color: rgba(15, 23, 42, 0.3);
             transform: translateY(-2px);
         }
 
-        /* Mobile Menu Toggle */
         .mobile-menu-btn {
             display: none;
-            font-size: 24px;
+            font-size: 22px;
             background: none;
             border: none;
+            color: var(--text-main);
             cursor: pointer;
-            color: var(--primary);
         }
 
-        /* =========================================================
-           HERO SECTION
-           ========================================================= */
+        /* HERO SECTION */
         .hero {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            max-width: 1300px;
-            margin: 60px auto;
-            padding: 0 5%;
+            max-width: 1400px;
+            margin: auto;
+            padding: 0 4% 0 6%;
             position: relative;
             z-index: 10;
+            gap: 20px;
+            min-height: calc(100vh - 90px);
+            width: 100%;
         }
 
         .hero-content {
-            flex: 1;
-            max-width: 550px;
+            flex: 0 0 500px;
+            max-width: 500px;
+            z-index: 5;
         }
 
-        .hero-content h1 {
-            font-size: 52px;
+        .hero-title {
+            font-family: var(--font-logo);
+            font-size: 54px;
             font-weight: 800;
-            line-height: 1.15;
-            color: var(--primary);
+            line-height: 1.08;
+            letter-spacing: -1.5px;
             margin-bottom: 20px;
-        }
-
-        .hero-content p {
-            font-size: 18px;
-            line-height: 1.6;
             color: var(--text-main);
-            margin-bottom: 40px;
-            font-weight: 400;
         }
 
-        /* App Store Buttons */
+        .hero-description {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            font-weight: 500;
+            text-align: justify;
+        }
+
+        .download-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            padding: 20px;
+            border-radius: 24px;
+            box-shadow: var(--glass-shadow);
+            display: inline-block;
+            width: 100%;
+            max-width: 460px;
+        }
+
         .download-title {
-            font-size: 16px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
             font-weight: 700;
-            margin-bottom: 15px;
-            color: var(--primary);
+            margin-bottom: 14px;
+            color: var(--accent-glow);
         }
 
         .app-buttons {
             display: flex;
-            gap: 15px;
+            gap: 14px;
         }
 
         .app-btn {
+            flex: 1;
             display: flex;
             align-items: center;
             gap: 10px;
-            background: #000;
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: transform 0.2s;
+            background: rgba(15, 23, 42, 0.05);
+            border: 1px solid rgba(15, 23, 42, 0.15);
+            color: var(--text-main);
+            padding: 10px 16px;
+            border-radius: 14px;
+            transition: all 0.3s ease;
         }
 
         .app-btn:hover {
-            transform: translateY(-3px);
+            background: rgba(15, 23, 42, 0.1);
+            border-color: rgba(15, 23, 42, 0.3);
+            transform: translateY(-2px);
         }
 
         .app-btn svg {
-            width: 24px;
-            height: 24px;
-            fill: white;
+            width: 20px;
+            height: 20px;
+            fill: var(--text-main);
         }
 
         .app-btn-text {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
         }
 
         .app-btn-text span:first-child {
-            font-size: 10px;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
         }
 
         .app-btn-text span:last-child {
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-main);
         }
 
-        /* =========================================================
-           HERO GRAPHIC (BEACON LOGO)
-           ========================================================= */
         .hero-graphic {
             flex: 1;
+            height: 100%;
             display: flex;
-            justify-content: flex-end;
+            justify-content: center;
             align-items: center;
+            position: relative;
+            z-index: 2;
         }
 
-        .main-logo-svg {
+        .hero-graphic::before {
+            content: '';
+            position: absolute;
             width: 100%;
-            max-width: 550px;
-            height: auto;
+            height: 100%;
+            max-width: 650px;
+            max-height: 650px;
+            background: radial-gradient(circle, rgba(2, 132, 199, 0.15) 0%, rgba(15, 23, 42, 0.05) 45%, rgba(255, 255, 255, 0) 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            filter: blur(50px);
+        }
+
+        .hero-standalone-logo {
+            width: 100%;
+            height: 80vh;
+            max-height: 100%;
+            object-fit: contain;
+            position: relative;
+            z-index: 2;
+            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.15));
             animation: float 6s ease-in-out infinite;
         }
 
         @keyframes float {
             0% { transform: translateY(0px); }
-            50% { transform: translateY(-15px); }
+            50% { transform: translateY(-12px); }
             100% { transform: translateY(0px); }
         }
 
-        /* =========================================================
-           RESPONSIVE DESIGN
-           ========================================================= */
+        /* DIRECT SERVICES SECTION */
+        .services-section {
+            position: relative;
+            z-index: 10;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 80px 6% 40px;
+            width: 100%;
+        }
+
+        .services-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .services-title {
+            font-family: var(--font-logo);
+            font-size: 40px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: var(--text-main);
+            margin-bottom: 12px;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 48px;
+        }
+
+        .service-item {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .service-img {
+            max-width: 180px;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            border-radius: 0;
+            flex-shrink: 0;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .service-info {
+            flex: 1;
+        }
+
+        .service-title {
+            font-family: var(--font-body);
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .service-info p {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-align: justify;
+        }
+
+        /* OUR CLIENTS MARQUEE SECTION */
+        .clients-section {
+            position: relative;
+            z-index: 10;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 6% 80px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .marquee-container {
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            padding: 20px 0;
+            mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+            -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+        }
+
+        .marquee-track {
+            display: flex;
+            gap: 40px;
+            width: max-content;
+            animation: marquee 16s linear infinite;
+        }
+
+        .marquee-container:hover .marquee-track {
+            animation-play-state: paused;
+        }
+
+        .client-logo-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border-radius: 16px;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 180px;
+            height: 90px;
+            box-shadow: var(--glass-shadow);
+        }
+
+        .client-logo {
+            max-width: 120px;
+            max-height: 55px;
+            object-fit: contain;
+        }
+
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        /* CONTACT & FEEDBACK FOOTER SECTION */
+        .contact-section {
+            background-color: var(--beacon-blue);
+            color: #ffffff;
+            position: relative;
+            z-index: 10;
+            padding: 60px 6% 40px;
+            width: 100%;
+        }
+
+        .contact-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+        }
+
+        .contact-col-title {
+            font-family: var(--font-logo);
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 28px;
+            color: #ffffff;
+        }
+
+        .contact-col-title span {
+            color: #ff4d4d;
+        }
+
+        /* Feedback Form */
+        .feedback-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .form-group label span {
+            color: #ff4d4d;
+        }
+
+        .form-input, 
+        .form-textarea {
+            width: 100%;
+            background: #ffffff;
+            border: none;
+            outline: none;
+            padding: 12px 14px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #0f172a;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .captcha-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+            color: #e2e8f0;
+            font-weight: 600;
+        }
+
+        .captcha-input {
+            width: 44px;
+            height: 38px;
+            background: #ffffff;
+            border: none;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .btn-send {
+            background: #f97316;
+            color: #ffffff;
+            border: none;
+            padding: 12px 36px;
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: fit-content;
+            text-transform: uppercase;
+            transition: background-color 0.25s, transform 0.2s;
+        }
+
+        .btn-send:hover {
+            background: #ea580c;
+            transform: translateY(-2px);
+        }
+
+        /* Contact Details Right Column */
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .info-icon {
+            width: 24px;
+            height: 24px;
+            fill: #f97316;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .info-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+
+        .info-text a {
+            color: #cbd5e1;
+            transition: color 0.2s;
+        }
+
+        .info-text a:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        .info-divider {
+            width: 100%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 4px 0;
+        }
+
+        /* RESPONSIVE DESIGN */
         @media (max-width: 992px) {
             .hero {
                 flex-direction: column;
                 text-align: center;
-                gap: 50px;
-                margin: 40px auto;
+                margin: 20px auto;
+                padding: 0 6%;
+                min-height: auto;
             }
             .hero-content {
                 max-width: 100%;
+                flex: none;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
             }
-            .hero-graphic {
-                justify-content: center;
-            }
             .nav-links {
-                display: none; /* Hide links on mobile */
+                display: none;
             }
             .mobile-menu-btn {
                 display: block;
             }
-            .hero-content h1 {
-                font-size: 40px;
+            .hero-title {
+                font-size: 42px;
             }
-        }
-
-        @media (max-width: 600px) {
-            .app-buttons {
-                flex-direction: column;
+            .hero-graphic {
                 width: 100%;
-                max-width: 300px;
+                height: auto;
+                margin-top: 20px;
             }
-            .app-btn {
-                justify-content: center;
+            .hero-standalone-logo {
+                width: 100%;
+                height: auto;
+                max-width: 450px;
+            }
+            .services-grid {
+                grid-template-columns: 1fr;
+                gap: 36px;
+            }
+            .service-item {
+                flex-direction: column;
+                text-align: center;
+            }
+            .service-img {
+                max-width: 240px;
+            }
+            .contact-container {
+                grid-template-columns: 1fr;
+                gap: 40px;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- Wavy Background -->
-    <div class="bg-wave">
-        <svg viewBox="0 0 1440 600" preserveAspectRatio="none">
-            <path fill="var(--wave-color)" d="M0,0 L1440,0 L1440,300 C1100,450 900,100 400,350 C200,450 0,300 0,300 Z"></path>
-        </svg>
+    <div class="bg-viewport">
+        <img src="background_final.jpg" alt="Background Texture" class="bg-image">
+        <div class="bg-overlay"></div>
+        <div class="radar-rings"></div>
     </div>
 
-    <!-- Navigation Bar -->
     <nav class="navbar">
-        <div class="nav-logo">
-            <!-- Mini SVG Logo for Navbar -->
-            <svg class="mini-logo-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <radialGradient id="mini-blue-grad" cx="40%" cy="40%" r="60%">
-                        <stop offset="0%" stop-color="#bac2fb" />
-                        <stop offset="100%" stop-color="#ebf1f8" stop-opacity="0.5" />
-                    </radialGradient>
-                </defs>
-                <circle cx="100" cy="100" r="90" fill="url(#mini-blue-grad)" />
-                <ellipse cx="100" cy="100" rx="90" ry="90" stroke="#888" stroke-width="1.5" fill="none" />
-                <ellipse cx="100" cy="100" rx="45" ry="90" stroke="#888" stroke-width="1.5" fill="none" />
-                <ellipse cx="100" cy="100" rx="90" ry="45" stroke="#888" stroke-width="1.5" fill="none" />
-                <!-- Mini Tower -->
-                <path d="M100 120 L85 180 L115 180 Z" stroke="#1e1e48" stroke-width="3" fill="none"/>
-                <!-- Signal -->
-                <path d="M80 80 Q100 60 120 80" stroke="#00c2ff" stroke-width="3" fill="none" stroke-linecap="round"/>
-            </svg>
-            Beacon
+        <div class="nav-brand">
+            <div class="nav-logo-wrapper">
+                <img src="logotrans.png" alt="Beacon Logo" class="nav-logo-img">
+            </div>
+            <span class="nav-title">Beacon</span>
         </div>
 
-        <button class="mobile-menu-btn">☰</button>
+        <button class="mobile-menu-btn" aria-label="Toggle Menu">☰</button>
 
         <div class="nav-links">
-            <a href="#"></a>
-            <a href="#"></a>
-            <a href="#"></a>
-            <a href="#"></a>
             <a href="about.html">About Us</a>
-            <!-- Links to your actual login page -->
-            <a href="login.html" class="btn-get-started">Login</a>
+            <a href="#services">Services</a>
+            <a href="#clients">Clients</a>
+            <a href="#contact">Contact</a>
+            <a href="login.html" class="btn-login">Login</a>
         </div>
     </nav>
 
-    <!-- Hero Section -->
     <main class="hero">
-        <!-- Left Content -->
         <div class="hero-content">
-            <h1>Beacon:<br>Connect the World.</h1>
-            <p>Tech services landing page to-enhanced network and systems and em-data efficient operating systems.</p>
+            <h1 class="hero-title">Beacon:<br>Connect the World.</h1>
+            <p class="hero-description">
+                A GIS-driven mobile network management platform that connects customer reported connectivity issues with tower level monitoring and regional network analytics, helping operators identify faults, assess coverage, prioritize problem areas, and enabling authorities to make data-driven decisions on telecom infrastructure.
+            </p>
             
-            <div class="download-title">Avaliable Soon</div>
-            <div class="app-buttons">
-                <a href="#" class="app-btn">
-                    <!-- Apple Logo SVG -->
-                    <svg viewBox="0 0 384 512">
-                        <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.1-44.6-35.9-2.8-74.3 22.7-93.1 22.7-18.9 0-48.6-21.4-75.6-21.2-46.7 .3-89.8 27.2-114 69.2-48.8 84.8-14.8 211.2 32.5 281.3 23.3 34.6 51 70.3 87 69.1 34.2-1.3 47.3-21.9 88.5-21.9 41.1 0 53 22 88.5 21.3 37.3-.6 61.2-33.8 84.1-70.5 29.3-46.9 41.4-92.4 42.1-94.8-1.1-.5-66.2-25.5-65.9-105.8zM245.9 83.1c20.3-24.7 34-59.2 30.2-93.1-28.7 1.2-64.4 19.3-85.4 43.8-17.5 20.3-33.5 55.4-28.9 88.7 32.3 2.5 63.8-14.7 84.1-39.4z"/>
-                    </svg>
-                    <div class="app-btn-text">
-                        <span>Download on the</span>
-                        <span>App Store</span>
-                    </div>
-                </a>
+            <div class="download-card">
+                <div class="download-title">Available Soon</div>
+                <div class="app-buttons">
+                    <a href="#" class="app-btn">
+                        <svg viewBox="0 0 384 512">
+                            <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.1-44.6-35.9-2.8-74.3 22.7-93.1 22.7-18.9 0-48.6-21.4-75.6-21.2-46.7 .3-89.8 27.2-114 69.2-48.8 84.8-14.8 211.2 32.5 281.3 23.3 34.6 51 70.3 87 69.1 34.2-1.3 47.3-21.9 88.5-21.9 41.1 0 53 22 88.5 21.3 37.3-.6 61.2-33.8 84.1-70.5 29.3-46.9 41.4-92.4 42.1-94.8-1.1-.5-66.2-25.5-65.9-105.8zM245.9 83.1c20.3-24.7 34-59.2 30.2-93.1-28.7 1.2-64.4 19.3-85.4 43.8-17.5 20.3-33.5 55.4-28.9 88.7 32.3 2.5 63.8-14.7 84.1-39.4z"/>
+                        </svg>
+                        <div class="app-btn-text">
+                            <span>Download on the</span>
+                            <span>App Store</span>
+                        </div>
+                    </a>
 
-                <a href="#" class="app-btn">
-                    <!-- Google Play Logo SVG -->
-                    <svg viewBox="0 0 512 512">
-                        <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/>
-                    </svg>
-                    <div class="app-btn-text">
-                        <span>GET IT ON</span>
-                        <span>Google Play</span>
-                    </div>
-                </a>
+                    <a href="#" class="app-btn">
+                        <svg viewBox="0 0 512 512">
+                            <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/>
+                        </svg>
+                        <div class="app-btn-text">
+                            <span>GET IT ON</span>
+                            <span>Google Play</span>
+                        </div>
+                    </a>
+                </div>
             </div>
         </div>
 
-        <!-- Right Content: The Beacon Logo Graphic -->
         <div class="hero-graphic">
-            <!-- Full SVG Recreation of the Beacon Logo -->
-            <svg class="main-logo-svg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <radialGradient id="blue-grad" cx="35%" cy="35%" r="65%">
-                        <stop offset="0%" stop-color="#bac2fb" stop-opacity="0.9" />
-                        <stop offset="70%" stop-color="#ebf1f8" stop-opacity="0.4" />
-                        <stop offset="100%" stop-color="transparent" />
-                    </radialGradient>
-                    
-                    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
-                        <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#000" flood-opacity="0.2"/>
-                    </filter>
-                </defs>
-
-                <!-- Colored Backdrop -->
-                <circle cx="250" cy="250" r="190" fill="url(#blue-grad)" />
-
-                <!-- Wireframe Globe Lines -->
-                <g stroke="#94a3b8" stroke-width="1.5" fill="none" opacity="0.7">
-                    <!-- Outer Circle -->
-                    <circle cx="250" cy="250" r="210" />
-                    <!-- Vertical Ellipses -->
-                    <ellipse cx="250" cy="250" rx="90" ry="210" />
-                    <ellipse cx="250" cy="250" rx="160" ry="210" />
-                    <!-- Horizontal Ellipses -->
-                    <ellipse cx="250" cy="250" rx="210" ry="90" />
-                    <ellipse cx="250" cy="250" rx="210" ry="160" />
-                    <!-- Diagonals -->
-                    <ellipse cx="250" cy="250" rx="210" ry="210" transform="rotate(45 250 250)" />
-                    <ellipse cx="250" cy="250" rx="210" ry="210" transform="rotate(-45 250 250)" />
-                </g>
-
-                <!-- Signal Waves -->
-                <g stroke="#3b82f6" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.8">
-                    <path d="M 270 200 Q 320 180 370 200" />
-                    <path d="M 280 230 Q 315 215 350 230" />
-                </g>
-
-                <!-- Text "Beacon" -->
-                <text x="250" y="275" font-family="'Inter', sans-serif" font-size="82" font-weight="900" fill="#1e1e48" text-anchor="middle" letter-spacing="-2">Beacon</text>
-
-                <!-- Tower Structure -->
-                <g stroke="#1e1e48" stroke-width="4" fill="none" stroke-linejoin="round" transform="translate(0, 25)">
-                    <!-- Main Legs -->
-                    <path d="M 250 260 L 210 400 L 290 400 Z" />
-                    <!-- Horizontal braces -->
-                    <line x1="225" y1="340" x2="275" y2="340" />
-                    <line x1="237" y1="295" x2="263" y2="295" />
-                    <!-- Diagonal braces -->
-                    <line x1="225" y1="340" x2="263" y2="295" />
-                    <line x1="237" y1="295" x2="275" y2="340" />
-                    
-                    <line x1="210" y1="400" x2="275" y2="340" />
-                    <line x1="225" y1="340" x2="290" y2="400" />
-                    
-                    <!-- Top Beacon dot -->
-                    <circle cx="250" cy="255" r="7" fill="#1e1e48" />
-                    <!-- Ring around top -->
-                    <ellipse cx="250" cy="265" rx="15" ry="5" stroke-width="3" />
-                </g>
-            </svg>
+            <img src="logotrans.png" alt="Beacon Logo" class="hero-standalone-logo">
         </div>
     </main>
 
+    <section class="services-section" id="services">
+        <div class="services-header">
+            <h2 class="services-title">Our Services</h2>
+        </div>
+
+        <div class="services-grid">
+            <div class="service-item">
+                <img src="network_suit.jpeg" alt="Network Monitoring" class="service-img">
+                <div class="service-info">
+                    <h3 class="service-title">Network Based Tower Solutions</h3>
+                    <p>Our services deal with monitoring and analysis. We identify faulty towers, assess potential disruptions, and support faster repair and maintenance decisions for peak performance.</p>
+                </div>
+            </div>
+
+            <div class="service-item">
+                <img src="network_hazards.jpeg" alt="Network Hazards" class="service-img">
+                <div class="service-info">
+                    <h3 class="service-title">Natural Hazard Risk Analysis</h3>
+                    <p>Our GIS-based tools help map and analyze risks. We identify towers exposed to flooding and heavy rainfall to ensure network resilience and prevent critical service issues.</p>
+                </div>
+            </div>
+
+            <div class="service-item">
+                <img src="tower_suit.png" alt="Optimal Tower Siting" class="service-img">
+                <div class="service-info">
+                    <h3 class="service-title">New Tower Suitability Mapping</h3>
+                    <p>Our optimal siting analysis uses GIS to find best locations by analyzing existing coverage, terrain data, population density, infrastructure accessibility, and identifying network gaps.</p>
+                </div>
+            </div>
+
+            <div class="service-item">
+                <img src="coverage_heatmap.jpeg" alt="Coverage Heatmap" class="service-img">
+                <div class="service-info">
+                    <h3 class="service-title">Coverage & Hotspot Mapping</h3>
+                    <p>Our service lets you visualize mobile network strength, pinpointing existing coverage gaps and high-density hotspots.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="clients-section" id="clients">
+        <div class="services-header">
+            <h2 class="services-title">Our Clients</h2>
+        </div>
+
+        <div class="marquee-container">
+            <div class="marquee-track">
+                <div class="client-logo-card">
+                    <img src="airtel_logo.svg" alt="Airtel Logo" class="client-logo">
+                </div>
+                <div class="client-logo-card">
+                    <img src="bsnl_logo.png" alt="BSNL Logo" class="client-logo">
+                </div>
+                <div class="client-logo-card">
+                    <img src="jio_logo.jpg" alt="Jio Logo" class="client-logo">
+                </div>
+                <div class="client-logo-card">
+                    <img src="Vi_logo.jpg" alt="Vi Logo" class="client-logo">
+                </div>
+
+                <div class="client-logo-card">
+                    <img src="airtel_logo.svg" alt="Airtel Logo" class="client-logo">
+                </div>
+                <div class="client-logo-card">
+                    <img src="bsnl_logo.png" alt="BSNL Logo" class="client-logo">
+                </div>
+                <div class="client-logo-card">
+                    <img src="jio_logo.jpg" alt="Jio Logo" class="client-logo">
+                </div>
+                <div class="client-logo-card">
+                    <img src="Vi_logo.jpg" alt="Vi Logo" class="client-logo">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="contact-section" id="contact">
+        <div class="contact-container">
+            <div class="feedback-col">
+                <h3 class="contact-col-title">Service Request</h3>
+                <form class="feedback-form" action="#" method="POST" onsubmit="event.preventDefault();">
+                    <div class="form-group">
+                        <label for="name">Your Name <span>*</span></label>
+                        <input type="text" id="name" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Your Email <span>*</span></label>
+                        <input type="email" id="email" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="feedback">Your Feedback <span>*</span></label>
+                        <textarea id="feedback" class="form-textarea" required></textarea>
+                    </div>
+
+                    <div class="captcha-group">
+                        <label for="captcha">Math Captcha</label>
+                        <input type="text" id="captcha" class="captcha-input" maxlength="4">
+                        <span>+ 63 = 73</span>
+                    </div>
+
+                    <button type="submit" class="btn-send">SEND</button>
+                </form>
+            </div>
+
+            <div class="contact-col">
+                <h3 class="contact-col-title">CONTACT US</h3>
+                <div class="contact-info">
+                    <div class="info-item">
+                        <svg class="info-icon" viewBox="0 0 24 24">
+                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                        </svg>
+                        <div class="info-text">
+                            Symbiosis Institute of Geoinformatics | SIG Pune<br>
+                            5th and 6th Floor, Atur Centre, Gokhale Rd,<br>
+                            Model Colony, Shivajinagar,<br>
+                            Pune, Maharashtra 411016
+                        </div>
+                    </div>
+
+                    <div class="info-divider"></div>
+
+                    <div class="info-item">
+                        <svg class="info-icon" viewBox="0 0 24 24">
+                            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                        </svg>
+                        <div class="info-text">
+                            +91 1800-123-4567<br>
+                        </div>
+                    </div>
+
+                    <div class="info-divider"></div>
+
+                    <div class="info-item">
+                        <svg class="info-icon" viewBox="0 0 24 24">
+                            <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                        </svg>
+                        <div class="info-text">
+                            <a href="mailto:contact@beacon-network.com">contact@beacon-network.com</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
     <script>
-        // Simple script to handle mobile menu toggle
         document.querySelector('.mobile-menu-btn').addEventListener('click', function() {
             const links = document.querySelector('.nav-links');
             if (links.style.display === 'flex') {
@@ -429,12 +910,14 @@
                 links.style.display = 'flex';
                 links.style.flexDirection = 'column';
                 links.style.position = 'absolute';
-                links.style.top = '80px';
-                links.style.left = '0';
-                links.style.width = '100%';
-                links.style.background = '#ffffff';
-                links.style.padding = '20px';
-                links.style.boxShadow = '0 10px 15px rgba(0,0,0,0.1)';
+                links.style.top = '70px';
+                links.style.left = '5%';
+                links.style.right = '5%';
+                links.style.background = 'rgba(255, 255, 255, 0.95)';
+                links.style.backdropFilter = 'blur(20px)';
+                links.style.padding = '24px';
+                links.style.borderRadius = '16px';
+                links.style.border = '1px solid var(--glass-border)';
             }
         });
     </script>

@@ -13,6 +13,10 @@
 
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script> 
 
+    <!-- Added for Query Tools: map export (PNG/PDF) and incident reporting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style> 
 
         /* ===================================================== 
@@ -301,6 +305,47 @@
         .update-btn { background: #3b82f6; border: none; color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: .2s; } 
         .update-btn:hover { background: #2563eb; } 
 
+        /* ===================================================== 
+            QUERY TOOLS: attribute/spatial query, coord readout, export
+        ===================================================== */
+        .coord-box { position: absolute; bottom: 12px; right: 12px; z-index: 500; background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; font-size: 10.5px; backdrop-filter: blur(8px); box-shadow: var(--shadow); color: var(--text-muted); line-height: 1.6; font-family: 'SFMono-Regular', Consolas, monospace; pointer-events: none; }
+        .coord-box b { color: #60a5fa; font-weight: 700; }
+
+        .query-field { margin-bottom: 12px; }
+        .query-label { display:block; font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; }
+        .query-select { width: 100%; background: #060b14; color: #ffffff; border: 1px solid var(--border); padding: 9px 12px; border-radius: 8px; outline: none; font-size: 12.5px; font-weight: 500; }
+        .query-btn-row { display: flex; gap: 8px; margin-top: 10px; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: #cbd5e1; padding: 9px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 11.5px; transition: .2s; flex: 1; }
+        .btn-outline:hover { background: rgba(255,255,255,0.06); border-color: #60a5fa; color: #60a5fa; }
+        .query-result-count { margin-top: 12px; display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; background: rgba(250, 204, 21, 0.08); border: 1px solid rgba(250, 204, 21, 0.3); }
+        .query-result-count .n { font-size: 20px; font-weight: 800; color: #facc15; }
+        .query-result-count .l { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+        .divider-line { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+        .pulse-dot { width: 14px; height: 14px; border-radius: 50%; background: rgba(250, 204, 21, 0.55); border: 2px solid #facc15; box-shadow: 0 0 0 rgba(250, 204, 21, 0.6); animation: pulseRing 1.4s infinite; }
+        @keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.55);} 70% { box-shadow: 0 0 0 10px rgba(250, 204, 21, 0);} 100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0);} }
+
+
+
+        /* =====================================================
+            COMPLAINTS MAP — added without changing existing views
+        ===================================================== */
+        .complaint-map-toolbar { display:flex; gap:8px; align-items:center; margin-bottom:12px; }
+        .complaint-map-search { flex:1; min-width:0; background:#060b14; color:#fff; border:1px solid var(--border); padding:10px 12px; border-radius:8px; outline:none; font-size:12.5px; }
+        .complaint-map-search:focus { border-color:#60a5fa; box-shadow:0 0 0 2px rgba(96,165,250,.12); }
+        .complaint-toggle { display:grid; grid-template-columns:1fr 1fr; gap:6px; background:rgba(255,255,255,.03); border:1px solid var(--border); border-radius:10px; padding:5px; margin-bottom:12px; }
+        .complaint-toggle button { border:0; border-radius:7px; padding:9px 8px; background:transparent; color:var(--text-muted); font-size:11.5px; font-weight:700; cursor:pointer; }
+        .complaint-toggle button.active { background:rgba(59,130,246,.2); color:#93c5fd; box-shadow:inset 0 0 0 1px rgba(59,130,246,.35); }
+        .complaint-map-summary { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; background:rgba(255,255,255,.025); margin-bottom:12px; }
+        .complaint-map-summary strong { color:#fff; font-size:18px; }
+        .complaint-map-summary span { color:var(--text-muted); font-size:11px; }
+        .complaint-search-status { min-height:18px; color:var(--text-muted); font-size:11px; line-height:1.45; margin-top:8px; }
+        .complaint-results-list { display:flex; flex-direction:column; gap:7px; max-height:270px; overflow-y:auto; padding-right:2px; }
+        .complaint-result-row { width:100%; text-align:left; border:1px solid var(--border); background:rgba(255,255,255,.025); border-radius:9px; padding:9px 10px; cursor:pointer; color:#fff; }
+        .complaint-result-row:hover { background:rgba(255,255,255,.06); border-color:rgba(96,165,250,.45); }
+        .complaint-result-row .rid { font-size:11.5px; font-weight:800; color:#93c5fd; }
+        .complaint-result-row .rmeta { margin-top:3px; color:var(--text-muted); font-size:10.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .buffer-label { background:#0b1329; border:1px solid rgba(96,165,250,.55); color:#bfdbfe; border-radius:6px; padding:3px 7px; font-size:10px; font-weight:700; box-shadow:0 4px 12px rgba(0,0,0,.28); }
+
         @media (max-width: 900px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .map-layout { flex-direction: column; min-height: auto;} .side-panel { width: 100%;} .map-panel {height: 400px; flex: none;}} 
         @media (max-width: 650px) { .header { padding: 0 16px; } .system-status { display: none; } .container { padding: 25px 15px 50px; } .page-header { flex-direction: column; gap: 15px; } .stats-grid { grid-template-columns: 1fr; } .worker-info { align-items: flex-start; gap: 15px; } .role-badge { display: none; } } 
     </style> 
@@ -335,8 +380,14 @@
             <button class="nav-item" onclick="switchView('view-facility', this)"> 
                 <span class="nav-icon">☗</span> Nearest Facility 
             </button> 
+            <button class="nav-item" onclick="switchView('view-complaints-map', this)">
+                <span class="nav-icon">●</span> Complaints Map
+            </button>
             <button class="nav-item" onclick="switchView('view-flood', this)"> 
                 <span class="nav-icon">▼</span> Flood Map 
+            </button> 
+            <button class="nav-item" onclick="switchView('view-query', this)"> 
+                <span class="nav-icon">⌕</span> Query &amp; Reports 
             </button> 
         </nav> 
 
@@ -468,6 +519,7 @@
                             <div class="legend-row"><span class="legend-swatch" style="background:#facc15"></span>Vi Tower</div> 
                             <div class="legend-row" style="margin-top:6px; border-top:1px solid (255,255,255,0.1); padding-top:4px;"><span class="legend-swatch" style="background:#9304f3; transform:rotate(45deg);"></span>Maintenance Facility</div> 
                         </div> 
+                        <div class="coord-box" id="facilityCoordBox">Cursor: — , —<br><b>Last click:</b> — , —</div> 
                     </div> 
                      
                     <div class="side-panel"> 
@@ -487,6 +539,63 @@
                     </div> 
                 </div> 
             </div> 
+
+
+            <div id="view-complaints-map" class="view-section">
+                <div class="page-header" style="margin-bottom:10px;">
+                    <div>
+                        <p class="page-description">View complaint locations across Pune, switch between all complaints and those assigned to you, or search an area to find complaints within a 5 km radius.</p>
+                    </div>
+                </div>
+
+                <div class="map-layout" style="margin-top:0;">
+                    <div class="map-panel">
+                        <div id="complaintsMap" style="height:100%; width:100%;"></div>
+                        <div class="legend-box">
+                            <div class="legend-title">Complaint Status</div>
+                            <div class="legend-row"><span class="legend-swatch" style="background:#facc15"></span>Pending</div>
+                            <div class="legend-row"><span class="legend-swatch" style="background:#60a5fa"></span>In Progress</div>
+                            <div class="legend-row"><span class="legend-swatch" style="background:#22c55e"></span>Resolved / Completed</div>
+                            <div class="legend-row"><span class="legend-swatch" style="background:#ef4444"></span>Rejected / Other</div>
+                            <div class="legend-row" style="margin-top:6px; border-top:1px solid rgba(255,255,255,.1); padding-top:6px;"><span class="legend-swatch" style="border-radius:50%; background:rgba(96,165,250,.35); border:1px solid #60a5fa"></span>5 km Search Buffer</div>
+                        </div>
+                        <div class="coord-box" id="complaintsCoordBox">Cursor: — , —<br><b>Last click:</b> — , —</div>
+                    </div>
+
+                    <div class="side-panel">
+                        <div class="side-card">
+                            <h3 class="section-title" style="margin-bottom:6px; font-size:15px;">Complaint Visibility</h3>
+                            <p class="section-subtitle" style="margin-bottom:12px;">Choose which complaints are visible on this map.</p>
+                            <div class="complaint-toggle" role="group" aria-label="Complaint visibility filter">
+                                <button type="button" id="complaintFilterAll" class="active">All Complaints</button>
+                                <button type="button" id="complaintFilterMine">Assigned to Me</button>
+                            </div>
+                            <div class="complaint-map-summary">
+                                <div><strong id="complaintMapCount">0</strong><br><span id="complaintMapCountLabel">complaints visible</span></div>
+                                <button type="button" class="btn-outline" id="complaintResetSearch" style="flex:none; padding:8px 10px;">Reset Area</button>
+                            </div>
+                        </div>
+
+                        <div class="side-card">
+                            <h3 class="section-title" style="margin-bottom:6px; font-size:15px;">Search Pune Location</h3>
+                            <p class="section-subtitle" style="margin-bottom:12px;">Search a locality or landmark. A 5 km circular buffer will be drawn and only complaints inside it will be shown.</p>
+                            <form id="complaintLocationForm" class="complaint-map-toolbar">
+                                <input id="complaintLocationSearch" class="complaint-map-search" type="search" placeholder="e.g. Kothrud, Hadapsar, Shivajinagar" autocomplete="off" aria-label="Search location in Pune">
+                                <button class="btn" type="submit">Search</button>
+                            </form>
+                            <div id="complaintSearchStatus" class="complaint-search-status">No area filter applied — showing complaints across Pune.</div>
+                        </div>
+
+                        <div class="side-card">
+                            <h3 class="section-title" style="margin-bottom:6px; font-size:15px;">Visible Complaints</h3>
+                            <p class="section-subtitle" style="margin-bottom:12px;">Click a complaint to zoom to its exact registered location.</p>
+                            <div id="complaintMapResults" class="complaint-results-list">
+                                <div style="color:var(--text-muted); font-size:12px; text-align:center; padding:10px;">Loading complaints...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div id="view-flood" class="view-section"> 
                 <div class="page-header" style="margin-bottom: 10px;"> 
@@ -509,6 +618,7 @@
                             <div class="legend-row"><span class="legend-swatch" style="background:#f87171"></span>High</div> 
                             <div class="legend-row"><span class="legend-swatch" style="background:#dc2626"></span>Critical</div> 
                         </div> 
+                        <div class="coord-box" id="floodCoordBox">Cursor: — , —<br><b>Last click:</b> — , —</div> 
                     </div> 
                      
                     <div class="side-panel"> 
@@ -524,6 +634,102 @@
                             <h3 class="section-title" style="margin-bottom:16px; font-size: 15px;">Towers by Risk Category</h3> 
                             <div id="riskCategoryCounts" style="display:flex; flex-direction:column; gap:12px; max-height: 250px; overflow-y: auto; padding-right: 5px;"></div> 
                         </div> 
+                    </div> 
+                </div> 
+            </div> 
+
+            <div id="view-query" class="view-section"> 
+                <div class="page-header" style="margin-bottom: 10px;"> 
+                    <div>
+                        <p class="page-description">Select by Attribute, Select by Location, coordinate readout, and map export / incident reporting.</p> 
+                    </div> 
+                </div> 
+
+                <div class="map-layout" style="margin-top:0;"> 
+                    <div class="map-panel"> 
+                        <div id="queryMap" style="height:100%; width:100%;"></div> 
+                        <div class="legend-box"> 
+                            <div class="legend-title">Query Highlight</div> 
+                            <div class="legend-row"><span class="pulse-dot"></span>&nbsp;&nbsp;Matched result</div> 
+                            <div class="legend-row" style="margin-top:6px;"><span class="legend-swatch" style="background:#8B7FD9; transform:rotate(45deg);"></span>Facility</div> 
+                            <div class="legend-row"><span class="legend-swatch" style="background:#f87171;"></span>Complaint</div> 
+                            <div class="legend-row" style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.1); padding-top:4px;"><span class="legend-swatch" style="background:transparent;border:1.5px dashed #ca6bc7;"></span>Ward / Zone boundary</div> 
+                        </div> 
+                        <div class="coord-box" id="queryCoordBox">Cursor: — , —<br><b>Last click:</b> — , —</div> 
+                    </div> 
+
+                    <div class="side-panel"> 
+
+                        <div class="side-card"> 
+                            <h3 class="section-title" style="margin-bottom:14px; font-size: 15px;">Select by Attribute</h3> 
+                            <div class="query-field"> 
+                                <label class="query-label">Operator</label> 
+                                <select class="query-select" id="qOperator"><option value="any">Any</option></select> 
+                            </div> 
+                            <div class="query-field" style="margin-bottom:0;"> 
+                                <label class="query-label">Network</label> 
+                                <select class="query-select" id="qNetwork"><option value="any">Any</option></select> 
+                            </div> 
+                            <div class="query-btn-row"> 
+                                <button class="btn-outline" id="btnClearAttrQuery">Clear</button> 
+                                <button class="btn" style="flex:1;" id="btnRunAttrQuery">Apply Query</button> 
+                            </div> 
+                            <div class="query-result-count" id="attrQueryResultBox" style="display:none;"> 
+                                <span class="l">Towers matched</span> 
+                                <span class="n" id="attrQueryCount">0</span> 
+                            </div> 
+                        </div> 
+
+                        <div class="side-card"> 
+                            <h3 class="section-title" style="margin-bottom:14px; font-size: 15px;">Select by Location</h3> 
+
+                            <div class="query-field"> 
+                                <label class="query-label">Reference tower</label> 
+                                <select class="query-select" id="qRefTower"><option value="">Select a tower…</option></select> 
+                            </div> 
+                            <div class="query-btn-row"> 
+                                <button class="btn-outline" style="flex:1;" id="btnFacilitiesNear">Same-operator facilities ≤ 5 km</button> 
+                            </div> 
+
+                            <hr class="divider-line"> 
+
+                            <div class="query-field" style="margin-bottom:8px;"> 
+                                <label class="query-label">Ward</label> 
+                                <select class="query-select" id="qWard"></select> 
+                            </div> 
+                            <button class="btn-outline" style="width:100%;" id="btnWardQuery">Towers inside selected ward</button> 
+                            <p class="section-subtitle" id="wardCoverageNote" style="margin-top:8px; font-size:11px;"></p> 
+
+                            <div class="query-result-count" id="spatialQueryResultBox" style="display:none;"> 
+                                <span class="l" id="spatialQueryLabel">Results</span> 
+                                <span class="n" id="spatialQueryCount">0</span> 
+                            </div> 
+                        </div> 
+
+                        <div class="side-card"> 
+                            <h3 class="section-title" style="margin-bottom:6px; font-size: 15px;">Coordinate / CRS Info</h3> 
+                            <p class="section-subtitle" style="margin-bottom:10px;">WGS 84 (EPSG:4326), decimal degrees — select any tower, or click one on the map.</p> 
+                            <div class="query-field"> 
+                                <label class="query-label">Tower</label> 
+                                <select class="query-select" id="qCoordTower"><option value="">Select a tower…</option></select> 
+                            </div> 
+                            <div class="query-result-count" style="background:rgba(59,130,246,0.08); border-color:rgba(59,130,246,0.3);"> 
+                                <span class="l">Selected tower</span> 
+                                <span class="n" id="reportTowerLabel" style="font-size:13px; color:#60a5fa;">None</span> 
+                            </div> 
+                            <p class="section-subtitle" id="reportTowerCoords" style="margin-top:8px;">—</p> 
+                        </div> 
+
+                        <div class="side-card"> 
+                            <h3 class="section-title" style="margin-bottom:6px; font-size: 15px;">Map Export &amp; Reporting</h3> 
+                            <p class="section-subtitle" style="margin-bottom:14px;">Export the current view, or generate an incident report for the reference tower above.</p> 
+                            <div class="query-btn-row" style="margin-top:0;"> 
+                                <button class="btn-outline" style="flex:1;" id="btnExportPng">Export PNG</button> 
+                                <button class="btn-outline" style="flex:1;" id="btnExportPdf">Export PDF</button> 
+                            </div> 
+                            <button class="btn" style="width:100%; margin-top:10px;" id="btnIncidentReport">Generate Incident Report</button> 
+                        </div> 
+
                     </div> 
                 </div> 
             </div> 
